@@ -63,15 +63,15 @@ void D3D9Renderer::Destroy()
 	pixel_format_ = PIXEL_FORMAT_UNKNOW;
 }
 
-void D3D9Renderer::Resize()
+bool D3D9Renderer::Resize()
 {
 	if (!d3d9_device_) {
-		return;
+		return false;
 	}
 
 	RECT client_rect;
 	if (!GetClientRect(hwnd_, &client_rect)) {
-		return;
+		return false;
 	}
 
 	for (int i = 0; i < PIXEL_PLANE_MAX; i++) {
@@ -95,10 +95,11 @@ void D3D9Renderer::Resize()
 		if (!Init(hwnd_)) {
 			LOG("IDirect3DDevice9::Reset() failed, %x ", hr);
 		}
-		return ;
+		return false;
 	}
 
 	CreateRender();
+	return true;
 } 
 
 void D3D9Renderer::Render(PixelFrame* frame)
@@ -121,9 +122,9 @@ void D3D9Renderer::Render(PixelFrame* frame)
 	End();
 }
 
-void D3D9Renderer::SetSharpen(float sharpness)
+void D3D9Renderer::SetSharpen(float unsharp)
 {
-	sharpness_ = sharpness;
+	unsharp_ = unsharp;
 }
 
 bool D3D9Renderer::CreateDevice()
@@ -224,23 +225,22 @@ bool D3D9Renderer::CreateRender()
 		return false;
 	}
 
-	for (int i = 0; i < PIXEL_PLANE_MAX; i++) {
-		input_texture_[i].reset(new D3D9RenderTexture(d3d9_device_));
-	}
-
 	for (int i = 0; i < PIXEL_SHADER_MAX; i++) {
 		render_target_[i].reset(new D3D9RenderTexture(d3d9_device_));
 	}
 
-	
 	render_target_[PIXEL_SHADER_YUV_BT601]->InitTexture(desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT);
 	render_target_[PIXEL_SHADER_YUV_BT709]->InitTexture(desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT);
-	render_target_[PIXEL_SHADER_SHARPENESS]->InitTexture(desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT);
+	render_target_[PIXEL_SHADER_SHARPEN]->InitTexture(desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT);
+	
+	render_target_[PIXEL_SHADER_YUV_BT601]->InitVertexShader();
+	render_target_[PIXEL_SHADER_YUV_BT709]->InitVertexShader();
+	render_target_[PIXEL_SHADER_SHARPEN]->InitVertexShader();
 
-	render_target_[PIXEL_SHADER_YUV_BT601]->InitPixelShader(L"yuv_bt601.hlsl", shader_d3d9_yuv_bt601, sizeof(shader_d3d9_yuv_bt601));
-	render_target_[PIXEL_SHADER_YUV_BT709]->InitPixelShader(L"yuv_bt709.hlsl", shader_d3d9_yuv_bt709, sizeof(shader_d3d9_yuv_bt709));
-	render_target_[PIXEL_SHADER_SHARPENESS]->InitPixelShader(L"shaprness.hlsl", shader_d3d9_sharpness, sizeof(shader_d3d9_sharpness));
-
+	render_target_[PIXEL_SHADER_YUV_BT601]->InitPixelShader(NULL, shader_d3d9_yuv_bt601, sizeof(shader_d3d9_yuv_bt601));
+	render_target_[PIXEL_SHADER_YUV_BT709]->InitPixelShader(NULL, shader_d3d9_yuv_bt709, sizeof(shader_d3d9_yuv_bt709));
+	render_target_[PIXEL_SHADER_SHARPEN]->InitPixelShader(NULL, shader_d3d9_sharpness, sizeof(shader_d3d9_sharpness));
+	
 	return true;
 }
 
@@ -375,15 +375,15 @@ void D3D9Renderer::Process()
 		return;
 	}
 
-	if (sharpness_ > 0) {
+	if (unsharp_ > 0) {
 		float width = static_cast<float>(width_);
 		float height = static_cast<float>(height_);
-		D3D9RenderTexture* render_target = render_target_[PIXEL_SHADER_SHARPENESS].get();
+		D3D9RenderTexture* render_target = render_target_[PIXEL_SHADER_SHARPEN].get();
 		render_target->Begin();
 		render_target->SetTexture(0, output_texture_->GetTexture());
 		render_target->SetConstant(0, &width, 1);
 		render_target->SetConstant(1, &height, 1);
-		render_target->SetConstant(2, &sharpness_, 1);
+		render_target->SetConstant(2, &unsharp_, 1);
 		render_target->Draw();
 		render_target->End();
 		output_texture_ = render_target;
@@ -402,7 +402,7 @@ void D3D9Renderer::End()
 			return ;
 		}
 
-		d3d9_device_->StretchRect(output_texture_->GetSurface(), NULL, back_buffer_, NULL, D3DTEXF_LINEAR);
+		d3d9_device_->StretchRect(output_texture_->GetSurface(), NULL, back_buffer_, NULL, D3DTEXF_POINT);
 		DX_SAFE_RELEASE(back_buffer_);
 		output_texture_ = NULL;
 	}
@@ -448,8 +448,15 @@ void D3D9Renderer::UpdateI444(PixelFrame* frame)
 	if (y_texture) {
 		hr = y_texture->LockRect(0, &rect, 0, 0);
 		if (SUCCEEDED(hr)) {
+			int src_pitch = frame->pitch[0];
+			int dst_pitch = rect.Pitch;
+			int pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
+			uint8_t* src_data = frame->plane[0];
+			uint8_t* dst_data = (uint8_t*)rect.pBits;
 			for (int i = 0; i < frame->height; i++) {
-				memcpy((char*)rect.pBits + i * rect.Pitch, frame->plane[0] + i * frame->width, frame->width);
+				memcpy(dst_data, src_data, pitch);
+				dst_data += dst_pitch;
+				src_data += src_pitch;
 			}
 			y_texture->UnlockRect(0);
 		}
@@ -458,8 +465,15 @@ void D3D9Renderer::UpdateI444(PixelFrame* frame)
 	if (u_texture) {
 		hr = u_texture->LockRect(0, &rect, 0, 0);
 		if (SUCCEEDED(hr)) {
+			int src_pitch = frame->pitch[1];
+			int dst_pitch = rect.Pitch;
+			int pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
+			uint8_t* src_data = frame->plane[1];
+			uint8_t* dst_data = (uint8_t*)rect.pBits;
 			for (int i = 0; i < frame->height; i++) {
-				memcpy((char*)rect.pBits + i * rect.Pitch, frame->plane[1] + i * frame->width, frame->width);
+				memcpy(dst_data, src_data, pitch);
+				dst_data += dst_pitch;
+				src_data += src_pitch;
 			}
 			u_texture->UnlockRect(0);
 		}
@@ -468,8 +482,15 @@ void D3D9Renderer::UpdateI444(PixelFrame* frame)
 	if (v_texture) {
 		hr = v_texture->LockRect(0, &rect, 0, 0);
 		if (SUCCEEDED(hr)) {
+			int src_pitch = frame->pitch[2];
+			int dst_pitch = rect.Pitch;
+			int pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
+			uint8_t* src_data = frame->plane[2];
+			uint8_t* dst_data = (uint8_t*)rect.pBits;
 			for (int i = 0; i < frame->height; i++) {
-				memcpy((char*)rect.pBits + i * rect.Pitch, frame->plane[2] + i * frame->width, frame->width);
+				memcpy(dst_data, src_data, pitch);
+				dst_data += dst_pitch;
+				src_data += src_pitch;
 			}
 			v_texture->UnlockRect(0);
 		}
@@ -495,12 +516,21 @@ void D3D9Renderer::UpdateI420(PixelFrame* frame)
 
 	D3DLOCKED_RECT rect;
 	HRESULT hr = S_OK;
+	int half_width = (frame->width + 1) / 2;
+	int half_height = (frame->height + 1) / 2;
 
 	if (y_texture) {
 		hr = y_texture->LockRect(0, &rect, 0, 0);
 		if (SUCCEEDED(hr)) {
+			int src_pitch = frame->pitch[0];
+			int dst_pitch = rect.Pitch;
+			int pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
+			uint8_t* src_data = frame->plane[0];
+			uint8_t* dst_data = (uint8_t*)rect.pBits;
 			for (int i = 0; i < frame->height; i++) {
-				memcpy((char*)rect.pBits + i * rect.Pitch, frame->plane[0] + i * frame->width, frame->width);
+				memcpy(dst_data, src_data, pitch);
+				dst_data += dst_pitch;
+				src_data += src_pitch;
 			}
 			y_texture->UnlockRect(0);
 		}
@@ -509,10 +539,15 @@ void D3D9Renderer::UpdateI420(PixelFrame* frame)
 	if (u_texture) {
 		hr = u_texture->LockRect(0, &rect, 0, 0);
 		if (SUCCEEDED(hr)) {
-			int half_width = (frame->width + 1) / 2;
-			int half_height = (frame->height + 1) / 2;
+			int src_pitch = frame->pitch[1];
+			int dst_pitch = rect.Pitch;
+			int pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
+			uint8_t* src_data = frame->plane[1];
+			uint8_t* dst_data = (uint8_t*)rect.pBits;
 			for (int i = 0; i < half_height; i++) {
-				memcpy((char*)rect.pBits + i * rect.Pitch, frame->plane[1] + i * half_width, half_width);
+				memcpy(dst_data, src_data, pitch);
+				dst_data += dst_pitch;
+				src_data += src_pitch;
 			}
 			u_texture->UnlockRect(0);
 		}
@@ -521,10 +556,15 @@ void D3D9Renderer::UpdateI420(PixelFrame* frame)
 	if (v_texture) {
 		hr = v_texture->LockRect(0, &rect, 0, 0);
 		if (SUCCEEDED(hr)) {
-			int half_width = (frame->width + 1) / 2;
-			int half_height = (frame->height + 1) / 2;
+			int src_pitch = frame->pitch[2];
+			int dst_pitch = rect.Pitch;
+			int pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
+			uint8_t* src_data = frame->plane[2];
+			uint8_t* dst_data = (uint8_t*)rect.pBits;
 			for (int i = 0; i < half_height; i++) {
-				memcpy((char*)rect.pBits + i * rect.Pitch, frame->plane[2] + i * half_width, half_width);
+				memcpy(dst_data, src_data, pitch);
+				dst_data += dst_pitch;
+				src_data += src_pitch;
 			}
 			v_texture->UnlockRect(0);
 		}

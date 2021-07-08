@@ -18,9 +18,12 @@ enum PixelFormat
 enum PixelShader
 {
 	PIXEL_SHADER_UNKNOW = 0,
+	PIXEL_SHADER_ARGB,
 	PIXEL_SHADER_YUV_BT601,
 	PIXEL_SHADER_YUV_BT709,
-	PIXEL_SHADER_SHARPENESS,
+	PIXEL_SHADER_NV12_BT601,
+	PIXEL_SHADER_NV12_BT709,
+	PIXEL_SHADER_SHARPEN,
 	PIXEL_SHADER_MAX
 };
 
@@ -42,7 +45,7 @@ struct PixelFrame
 	int          height = 0;
 	int          pitch[3] = { 0, 0, 0 };
 	uint8_t*     plane[3] = { NULL, NULL, NULL };
-	PixelFormat  format;
+	PixelFormat  format = PIXEL_FORMAT_UNKNOW;
 };
 
 class Renderer
@@ -54,11 +57,11 @@ public:
 	virtual bool Init(HWND hwnd) = 0;
 	virtual void Destroy() = 0;
 
-	virtual void Resize() = 0;
+	virtual bool Resize() = 0;
 
 	virtual void Render(PixelFrame* frame) = 0;
 
-	virtual void SetSharpen() {}
+	virtual void SetSharpen(float unsharp) {}
 
 };
 

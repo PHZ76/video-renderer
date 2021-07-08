@@ -15,7 +15,7 @@ sampler ImageSampler = sampler_state
 
 uniform float width     : register(c0);
 uniform float height    : register(c1);
-uniform float sharpness : register(c2);
+uniform float unsharp   : register(c2);
 
 struct PixelShaderInput
 {
@@ -40,7 +40,7 @@ float4 main(PixelShaderInput input) : SV_Target
                 + tex2D(ImageSampler, input.uv + st2 * float2(-1,  0))
                 + tex2D(ImageSampler, input.uv + st2 * float2( 0, -1));
     float4 t = p * 0.859375 + sum2 * -0.1171875 + sum1 * -0.09765625;
-    return float4(p + t * sharpness);
+    return float4(p + t * unsharp);
 }
 
 // sharpness :0.0 to 1.0

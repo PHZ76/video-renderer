@@ -1,7 +1,8 @@
 #include "main_window.h"
-#include "d3d11_screen_capture.h"
 #include "d3d9_screen_capture.h"
+#include "d3d11_screen_capture.h"
 #include "d3d9_renderer.h"
+#include "d3d11_renderer.h"
 
 #include "libyuv/libyuv.h"
 
@@ -154,7 +155,7 @@ int main(int argc, char** argv)
 		return -3;
 	}
 
-	renderer.SetSharpen(0.5);
+	//renderer.SetSharpen(0.5);
 
 	int original_width = 0, original_height = 0;
 	GetWindowSize(window.GetHandle(), original_width, original_height);

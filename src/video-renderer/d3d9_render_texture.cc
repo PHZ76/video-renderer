@@ -71,9 +71,6 @@ bool D3D9RenderTexture::InitTexture(UINT width, UINT height, UINT levels, DWORD 
 	DX_SAFE_RELEASE(render_texture_);
 
 	HRESULT hr = S_OK;
-	Vertex* vertex = NULL;
-	float w = static_cast<float>(width);
-	float h = static_cast<float>(height);
 
 	hr = d3d9_device_->CreateTexture(
 		width,
@@ -96,19 +93,6 @@ bool D3D9RenderTexture::InitTexture(UINT width, UINT height, UINT levels, DWORD 
 		goto failed;
 	}
 
-	hr = d3d9_device_->CreateVertexBuffer(4 * sizeof(Vertex), 0, FVF, D3DPOOL_DEFAULT, &vertex_buffer_, NULL);
-	if (FAILED(hr)) {
-		LOG("IDirect3DDevice9::CreateVertexBuffer() failed, %x", hr);
-		goto failed;
-	}
-
-	vertex_buffer_->Lock(0, 4 * sizeof(Vertex), (void**)&vertex, 0);
-	vertex[0] = { 0, 0, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 0.0f, 0.0f };
-	vertex[1] = { w, 0, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 0.0f };
-	vertex[2] = { w, h, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 1.0f };
-	vertex[3] = { 0, h, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 0.0f, 1.0f };
-	vertex_buffer_->Unlock();
-
 	return true;
 
 failed:
@@ -116,42 +100,6 @@ failed:
 	DX_SAFE_RELEASE(render_surface_);
 	DX_SAFE_RELEASE(render_texture_);
 	return false;
-}
-
-bool D3D9RenderTexture::InitTexture(IDirect3DSurface9* render_target)
-{
-	if (!d3d9_device_) {
-		return false;
-	}
-
-	HRESULT hr = S_OK;
-	Vertex* vertex = NULL;
-	D3DSURFACE_DESC dsec;
-
-	hr = render_target->GetDesc(&dsec);
-	if (FAILED(hr)) {
-		LOG("IDirect3DSurface9::GetDesc() failed, %x", hr);
-		return false;
-	}
-
-	float w = static_cast<float>(dsec.Width);
-	float h = static_cast<float>(dsec.Height);
-
-	hr = d3d9_device_->CreateVertexBuffer(4 * sizeof(Vertex), 0, FVF, D3DPOOL_DEFAULT, &vertex_buffer_, NULL);
-	if (FAILED(hr)) {
-		LOG("IDirect3DDevice9::CreateVertexBuffer() failed, %x", hr);
-		return false;
-	}
-
-	vertex_buffer_->Lock(0, 4 * sizeof(Vertex), (void**)&vertex, 0);
-	vertex[0] = { 0, 0, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 0.0f, 0.0f };
-	vertex[1] = { w, 0, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 0.0f };
-	vertex[2] = { w, h, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 1.0f };
-	vertex[3] = { 0, h, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 0.0f, 1.0f };
-	vertex_buffer_->Unlock();
-
-	render_surface_ = render_target;
-	return true;
 }
 
 bool D3D9RenderTexture::InitSurface(UINT width, UINT height, D3DFORMAT format, D3DPOOL pool)
@@ -163,6 +111,19 @@ bool D3D9RenderTexture::InitSurface(UINT width, UINT height, D3DFORMAT format, D
 	HRESULT hr = d3d9_device_->CreateOffscreenPlainSurface(width, height, format, pool, &render_surface_, NULL);
 	if (FAILED(hr)) {
 		LOG("IDirect3DDevice9::CreateOffscreenPlainSurface() failed, %x", hr);
+		return false;
+	}
+
+	return true;
+}
+
+bool D3D9RenderTexture::InitVertexShader()
+{
+	HRESULT hr = S_OK;
+	
+	hr = d3d9_device_->CreateVertexBuffer(4 * sizeof(Vertex), 0, FVF, D3DPOOL_DEFAULT, &vertex_buffer_, NULL);
+	if (FAILED(hr)) {
+		LOG("IDirect3DDevice9::CreateVertexBuffer() failed, %x", hr);
 		return false;
 	}
 
@@ -225,6 +186,17 @@ void D3D9RenderTexture::Begin()
 		return;
 	}
 
+	Vertex* vertex = NULL;
+	float w = static_cast<float>(dsec.Width);
+	float h = static_cast<float>(dsec.Height);
+
+	vertex_buffer_->Lock(0, 4 * sizeof(Vertex), (void**)&vertex, 0);
+	vertex[0] = { 0, 0, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 0.0f, 0.0f };
+	vertex[1] = { w, 0, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 0.0f };
+	vertex[2] = { w, h, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 1.0f };
+	vertex[3] = { 0, h, 0.0f, D3DCOLOR_ARGB(255, 255, 255, 255), 0.0f, 1.0f };
+	vertex_buffer_->Unlock();
+
 	D3DMATRIX d3dmatrix;
 	memset(&d3dmatrix, 0, sizeof(D3DMATRIX));
 	d3dmatrix.m[0][0] =  2.0f / dsec.Width;
@@ -240,7 +212,9 @@ void D3D9RenderTexture::Begin()
 	d3d9_device_->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
 	d3d9_device_->SetFVF(FVF);
-	d3d9_device_->SetStreamSource(0, vertex_buffer_, 0, sizeof(Vertex));
+	if (vertex_buffer_) {
+		d3d9_device_->SetStreamSource(0, vertex_buffer_, 0, sizeof(Vertex));
+	}
 	if (pixel_shader_) {
 		d3d9_device_->SetPixelShader(pixel_shader_);
 	}

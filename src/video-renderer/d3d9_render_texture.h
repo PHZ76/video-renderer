@@ -17,8 +17,8 @@ public:
 
 	// init
 	bool InitTexture(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool);
-	bool InitTexture(IDirect3DSurface9* render_target);
 	bool InitSurface(UINT width, UINT height, D3DFORMAT format, D3DPOOL pool);
+	bool InitVertexShader();
 	bool InitPixelShader(CONST WCHAR* pathname, const BYTE* pixel_shader=NULL, size_t pixel_shader_size=0);
 
 	// render

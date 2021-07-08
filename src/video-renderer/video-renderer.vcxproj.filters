@@ -15,6 +15,9 @@
     <Filter Include="源文件\shader\d9d9">
       <UniqueIdentifier>{fd278db4-a189-4d15-865e-f376b94d3259}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\shader\d3d11">
+      <UniqueIdentifier>{c1e90207-47f1-430a-ae33-cb4c979bb21c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d9_renderer.cc">
@@ -58,6 +61,24 @@
     <ClInclude Include="d3d11_render_texture.h">
       <Filter>源文件</Filter>
     </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_vertex.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_nv12_bt601.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_nv12_bt709.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_yuv_bt601.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_yuv_bt709.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_pixel.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\d3d9\d3d9_yuv_bt601.hlsl">
@@ -68,6 +89,27 @@
     </FxCompile>
     <FxCompile Include="shader\d3d9\d3d9_sharpness.hlsl">
       <Filter>源文件\shader\d9d9</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_vertex.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_sharpen.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_yuv_bt601.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_nv12_bt601.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_nv12_bt709.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_yuv_bt709.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_pixel.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

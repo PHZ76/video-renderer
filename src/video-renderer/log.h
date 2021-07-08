@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstdio>
+
 #define LOG(format, ...)  	\
 {								\
-    fprintf(stderr, "[%s:%s:%d] " format " \n", \
-    __FILE__, __FUNCTION__ , __LINE__, ##__VA_ARGS__);     \
+    fprintf(stderr, "[%s:%d] " format " \n", \
+     __FUNCTION__ , __LINE__, ##__VA_ARGS__);     \
 }

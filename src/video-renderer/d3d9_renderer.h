@@ -14,12 +14,12 @@ public:
 	virtual bool Init(HWND hwnd);
 	virtual void Destroy();
 
-	virtual void Resize();
+	virtual bool Resize();
 
 	virtual void Render(PixelFrame* frame);
 
 	// sharpness: 0.0 to 10.0
-	virtual void SetSharpen(float sharpness);
+	virtual void SetSharpen(float unsharp);
 
 private:
 	bool CreateDevice();
@@ -53,7 +53,7 @@ private:
 	std::unique_ptr<D3D9RenderTexture> input_texture_[PIXEL_PLANE_MAX];
 	std::unique_ptr<D3D9RenderTexture> render_target_[PIXEL_SHADER_MAX];
 
-	float sharpness_ = 0.0;
+	float unsharp_ = 0.0;
 };
 
 }

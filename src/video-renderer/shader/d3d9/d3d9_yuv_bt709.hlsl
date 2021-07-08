@@ -6,7 +6,7 @@ texture VTexture;
 
 sampler YSampler = sampler_state
 {
-    Texture = <YTexture>;
+    Texture   = <YTexture>;
     magfilter = LINEAR;
     minfilter = LINEAR;
     mipfilter = NONE;

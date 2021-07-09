@@ -20,11 +20,13 @@ public:
 
 	ID3D11Device* GetDevice();
 
-private:
+	// sharpness: 0.0 to 10.0
+	virtual void SetSharpen(float unsharp);
+
+protected:
 	bool InitDevice();
 	bool CreateRenderer();
 	bool CreateTexture(int width, int height, PixelFormat format);
-
 	void Begin();
 	void Copy(PixelFrame* frame);
 	void Process();
@@ -54,6 +56,9 @@ private:
 	D3D11RenderTexture* output_texture_ = NULL;
 	std::unique_ptr<D3D11RenderTexture> input_texture_[PIXEL_PLANE_MAX];
 	std::unique_ptr<D3D11RenderTexture> render_target_[PIXEL_SHADER_MAX];
+
+	float unsharp_ = 0.0;
+	ID3D11Buffer* sharpen_constants_ = NULL;
 };
 
 }

@@ -68,7 +68,7 @@ D3D11RenderTexture::~D3D11RenderTexture()
 	Cleanup();
 }
 
-bool D3D11RenderTexture::InitTexture(UINT width, UINT height, DXGI_FORMAT format, D3D11_USAGE usage, UINT bind_flags, UINT cpu_flags, UINT misc_flags)
+bool D3D11RenderTexture::InitTexture(UINT width, UINT height, DXGI_FORMAT format, D3D11_USAGE usage,UINT bind_flags, UINT cpu_flags, UINT misc_flags)
 {
 	if (!d3d11_device_) {
 		return false;
@@ -76,7 +76,9 @@ bool D3D11RenderTexture::InitTexture(UINT width, UINT height, DXGI_FORMAT format
 
 	DX_SAFE_RELEASE(texture_);
 	DX_SAFE_RELEASE(render_target_view_);
-	DX_SAFE_RELEASE(shader_resource_view_);
+	DX_SAFE_RELEASE(chrominance_view_);
+	DX_SAFE_RELEASE(luminance_view_);
+	DX_SAFE_RELEASE(texture_view_);
 
 	HRESULT hr = S_OK;
 
@@ -102,8 +104,10 @@ bool D3D11RenderTexture::InitTexture(UINT width, UINT height, DXGI_FORMAT format
 
 	D3D11_RENDER_TARGET_VIEW_DESC render_target_videw_desc;
 	D3D11_SHADER_RESOURCE_VIEW_DESC resource_view_desc;
+	
 
 	if (bind_flags & D3D11_BIND_RENDER_TARGET) {
+		memset(&render_target_videw_desc, 0, sizeof(D3D11_RENDER_TARGET_VIEW_DESC));
 		memset(&render_target_videw_desc, 0, sizeof(D3D11_RENDER_TARGET_VIEW_DESC));
 		render_target_videw_desc.Format = texture_desc.Format;
 		render_target_videw_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
@@ -116,16 +120,38 @@ bool D3D11RenderTexture::InitTexture(UINT width, UINT height, DXGI_FORMAT format
 		}
 	}
 
-	memset(&resource_view_desc, 0, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-	resource_view_desc.Format = format;
-	resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	resource_view_desc.Texture2D.MostDetailedMip = 0;
-	resource_view_desc.Texture2D.MipLevels = 1;
+	if (format == DXGI_FORMAT_NV12) {
+		memset(&resource_view_desc, 0, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
+		resource_view_desc.Format = DXGI_FORMAT_R8_UNORM;
+		resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		resource_view_desc.Texture2D.MostDetailedMip = 0;
+		resource_view_desc.Texture2D.MipLevels = 1;
 
-	hr = d3d11_device_->CreateShaderResourceView(texture_, &resource_view_desc, &shader_resource_view_);
-	if (FAILED(hr)) {
-		LOG("ID3D11Device::CreateRenderTargetView() failed, %x \n", hr);
-		goto failed;
+		hr = d3d11_device_->CreateShaderResourceView(texture_, &resource_view_desc, &luminance_view_);
+		if (FAILED(hr)) {
+			LOG("ID3D11Device::CreateRenderTargetView(R8) failed, %x \n", hr);
+			goto failed;
+		}
+
+		resource_view_desc.Format = DXGI_FORMAT_R8G8_UNORM;
+		hr = d3d11_device_->CreateShaderResourceView(texture_, &resource_view_desc, &chrominance_view_);
+		if (FAILED(hr)) {
+			LOG("ID3D11Device::CreateRenderTargetView(R8G8) failed, %x \n", hr);
+			goto failed;
+		}
+	}
+	else {
+		memset(&resource_view_desc, 0, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
+		resource_view_desc.Format = format;
+		resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		resource_view_desc.Texture2D.MostDetailedMip = 0;
+		resource_view_desc.Texture2D.MipLevels = 1;
+
+		hr = d3d11_device_->CreateShaderResourceView(texture_, &resource_view_desc, &texture_view_);
+		if (FAILED(hr)) {
+			LOG("ID3D11Device::CreateRenderTargetView() failed, %x \n", hr);
+			goto failed;
+		}
 	}
 
 	return true;
@@ -133,7 +159,9 @@ bool D3D11RenderTexture::InitTexture(UINT width, UINT height, DXGI_FORMAT format
 failed:
 	DX_SAFE_RELEASE(texture_);
 	DX_SAFE_RELEASE(render_target_view_);
-	DX_SAFE_RELEASE(shader_resource_view_);
+	DX_SAFE_RELEASE(chrominance_view_);
+	DX_SAFE_RELEASE(luminance_view_);
+	DX_SAFE_RELEASE(texture_view_);
 	return false;
 }
 
@@ -165,7 +193,6 @@ bool D3D11RenderTexture::InitVertexShader()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-
 #if 0
 	ID3DBlob* vs_blob = nullptr;
 	bool result = CompileShaderFromFile(L"d3d11_vs.hlsl", "main", "vs_4_0", &vs_blob);
@@ -244,7 +271,7 @@ bool D3D11RenderTexture::InitVertexShader()
 
 	hr = d3d11_device_->CreateBuffer(&vertex_buffer_desc, &vertex_buffer_data, &vertex_buffer_);
 	if (FAILED(hr)) {
-		fprintf(stderr, "[D3D11Renderer] CreateBuffer(VERTEX_BUFFER) failed, %x \n", hr);
+		LOG("ID3D11Device::CreateBuffer(VERTEX_BUFFER) failed, %x \n", hr);
 		return false;
 	}
 
@@ -321,12 +348,12 @@ bool D3D11RenderTexture::InitRasterizerState()
 	return true;
 }
 
-ID3D11ShaderResourceView* D3D11RenderTexture::GetShaderResourceView()
+ID3D11ShaderResourceView* D3D11RenderTexture::GetTextureView()
 {
-	return shader_resource_view_;
+	return texture_view_;
 }
 
-ID3D11RenderTargetView* D3D11RenderTexture::GetRenderTargetView()
+ID3D11RenderTargetView* D3D11RenderTexture::GetRenderTarget()
 {
 	return render_target_view_;
 }
@@ -346,8 +373,10 @@ void D3D11RenderTexture::Cleanup()
 
 	DX_SAFE_RELEASE(texture_);
 	DX_SAFE_RELEASE(render_target_view_);
-	DX_SAFE_RELEASE(shader_resource_view_);
-	
+	DX_SAFE_RELEASE(texture_view_);
+	DX_SAFE_RELEASE(chrominance_view_);
+	DX_SAFE_RELEASE(luminance_view_);
+
 	DX_SAFE_RELEASE(d3d11_device_);
 	DX_SAFE_RELEASE(d3d11_context_);
 	DX_SAFE_RELEASE(swap_chain_);
@@ -404,25 +433,26 @@ void D3D11RenderTexture::Begin()
 	d3d11_context_->UpdateSubresource((ID3D11Resource*)vertex_constants_, 0, NULL, &vertex_shader_constants, 0, 0);
 
 	d3d11_context_->OMGetRenderTargets(1, &cache_render_target_view_, &cache_depth_stencil_view_);
+	d3d11_context_->OMSetRenderTargets(0, NULL, NULL);
 	d3d11_context_->OMSetRenderTargets(1, &render_target_view_, NULL);
 	d3d11_context_->ClearRenderTargetView(render_target_view_, Colors::Black);
 
-	if (vertex_buffer_) {
-		const UINT stride = sizeof(Vertex);
-		const UINT offset = 0;
-		d3d11_context_->IASetVertexBuffers(0, 1, &vertex_buffer_, &stride, &offset);
+	if (rasterizer_state_) {
+		d3d11_context_->RSSetState(rasterizer_state_);
 	}
 
 	if (vertex_layout_) {
 		d3d11_context_->IASetInputLayout(vertex_layout_);
 	}	
 
-	if (rasterizer_state_) {
-		d3d11_context_->RSSetState(rasterizer_state_);
-	}
-
 	if (vertex_shader_) {
 		d3d11_context_->VSSetShader(vertex_shader_, NULL, 0);
+	}
+
+	if (vertex_buffer_) {
+		const UINT stride = sizeof(Vertex);
+		const UINT offset = 0;
+		d3d11_context_->IASetVertexBuffers(0, 1, &vertex_buffer_, &stride, &offset);
 	}
 
 	if (vertex_constants_) {
@@ -479,4 +509,6 @@ void D3D11RenderTexture::End()
 	d3d11_context_->OMSetRenderTargets(1, &cache_render_target_view_, cache_depth_stencil_view_);
 	DX_SAFE_RELEASE(cache_render_target_view_);
 	DX_SAFE_RELEASE(cache_depth_stencil_view_);
+
+
 }

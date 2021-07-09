@@ -14,7 +14,7 @@ cbuffer SharpenParams : register(b0)
 
 struct PixelShaderInput
 {
-    float4 pos   : POSITION;
+    float4 pos   : SV_POSITION;
     float2 uv    : TEXCOORD0;
     float4 color : COLOR0;
 };

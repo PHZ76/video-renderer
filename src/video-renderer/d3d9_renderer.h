@@ -21,7 +21,7 @@ public:
 	// sharpness: 0.0 to 10.0
 	virtual void SetSharpen(float unsharp);
 
-private:
+protected:
 	bool CreateDevice();
 	bool CreateRender();
 	bool CreateTexture(int width, int height, PixelFormat format);

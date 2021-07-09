@@ -150,12 +150,12 @@ int main(int argc, char** argv)
 		return -2;
 	}
 
-	xop::D3D9Renderer renderer;
+	xop::D3D11Renderer renderer;
 	if (!renderer.Init(window.GetHandle())) {
 		return -3;
 	}
 
-	//renderer.SetSharpen(0.5);
+	renderer.SetSharpen(0.5);
 
 	int original_width = 0, original_height = 0;
 	GetWindowSize(window.GetHandle(), original_width, original_height);

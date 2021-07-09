@@ -386,6 +386,7 @@ void D3D9Renderer::Process()
 		render_target->SetConstant(2, &unsharp_, 1);
 		render_target->Draw();
 		render_target->End();
+		render_target->SetTexture(0, NULL);
 		output_texture_ = render_target;
 	}
 }
@@ -402,7 +403,7 @@ void D3D9Renderer::End()
 			return ;
 		}
 
-		d3d9_device_->StretchRect(output_texture_->GetSurface(), NULL, back_buffer_, NULL, D3DTEXF_POINT);
+		d3d9_device_->StretchRect(output_texture_->GetSurface(), NULL, back_buffer_, NULL, D3DTEXF_LINEAR);
 		DX_SAFE_RELEASE(back_buffer_);
 		output_texture_ = NULL;
 	}
@@ -504,6 +505,9 @@ void D3D9Renderer::UpdateI444(PixelFrame* frame)
 		render_target->SetTexture(2, v_texture);
 		render_target->Draw();
 		render_target->End();
+		render_target->SetTexture(0, NULL);
+		render_target->SetTexture(1, NULL);
+		render_target->SetTexture(2, NULL);
 		output_texture_ = render_target;
 	}
 }
@@ -578,6 +582,9 @@ void D3D9Renderer::UpdateI420(PixelFrame* frame)
 		render_target->SetTexture(2, v_texture);
 		render_target->Draw();
 		render_target->End();
+		render_target->SetTexture(0, NULL);
+		render_target->SetTexture(1, NULL);
+		render_target->SetTexture(2, NULL);
 		output_texture_ = render_target;
 	}
 }

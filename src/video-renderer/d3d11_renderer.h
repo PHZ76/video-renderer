@@ -2,6 +2,7 @@
 
 #include "renderer.h"
 #include "d3d11_render_texture.h"
+#include <mutex>
 
 namespace xop {
 
@@ -37,9 +38,11 @@ protected:
 	void UpdateI420(PixelFrame* frame);
 	void UpdateNV12(PixelFrame* frame);
 
+	std::mutex mutex_;
+
 	HWND wnd_ = NULL;
-	D3D_DRIVER_TYPE   driver_type_;
-	D3D_FEATURE_LEVEL feature_level_;
+	D3D_DRIVER_TYPE   driver_type_ = D3D_DRIVER_TYPE_UNKNOWN;
+	D3D_FEATURE_LEVEL feature_level_ = D3D_FEATURE_LEVEL_11_0;
 
 	ID3D11Device* d3d11_device_            = NULL;
 	IDXGISwapChain* swap_chain_            = NULL;

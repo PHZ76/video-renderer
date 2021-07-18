@@ -9,7 +9,7 @@ sampler YSampler = sampler_state
     Texture   = <YTexture>;
     magfilter = LINEAR;
     minfilter = LINEAR;
-    mipfilter = NONE;
+    mipfilter = POINT;
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
@@ -19,7 +19,7 @@ sampler USampler = sampler_state
     Texture   = <UTexture>;
     magfilter = LINEAR;
     minfilter = LINEAR;
-    mipfilter = NONE;
+    mipfilter = POINT;
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
@@ -29,7 +29,7 @@ sampler VSampler = sampler_state
     Texture   = <VTexture>;
     magfilter = LINEAR;
     minfilter = LINEAR;
-    mipfilter = NONE;
+    mipfilter = POINT;
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };

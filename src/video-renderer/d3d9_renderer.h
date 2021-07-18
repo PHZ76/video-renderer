@@ -3,6 +3,8 @@
 #include "renderer.h"
 #include "d3d9_render_texture.h"
 
+#include <mutex>
+
 namespace xop {
 
 class D3D9Renderer : public Renderer
@@ -17,6 +19,8 @@ public:
 	virtual bool Resize();
 
 	virtual void Render(PixelFrame* frame);
+
+	virtual IDirect3DDevice9* GetDevice();
 
 	// sharpness: 0.0 to 10.0
 	virtual void SetSharpen(float unsharp);
@@ -35,6 +39,8 @@ protected:
 	void UpdateI444(PixelFrame* frame);
 	void UpdateI420(PixelFrame* frame);
 	void UpdateNV12(PixelFrame* frame);
+
+	std::mutex mutex_;
 
 	HWND hwnd_ = NULL;
 

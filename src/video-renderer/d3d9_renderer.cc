@@ -65,12 +65,21 @@ void D3D9Renderer::Destroy()
 
 bool D3D9Renderer::Resize()
 {
+	std::lock_guard<std::mutex> locker(mutex_);
+
 	if (!d3d9_device_) {
 		return false;
 	}
 
 	RECT client_rect;
 	if (!GetClientRect(hwnd_, &client_rect)) {
+		return false;
+	}
+
+	UINT width = static_cast<UINT>(client_rect.right - client_rect.left);
+	UINT height = static_cast<UINT>(client_rect.bottom - client_rect.top);
+
+	if (width == 0 && height == 0) {
 		return false;
 	}
 
@@ -86,8 +95,8 @@ bool D3D9Renderer::Resize()
 	output_texture_ = NULL;
 	pixel_format_ = PIXEL_FORMAT_UNKNOW;
 
-	present_params_.BackBufferWidth = static_cast<UINT>(client_rect.right - client_rect.left);
-	present_params_.BackBufferHeight = static_cast<UINT>(client_rect.bottom - client_rect.top);
+	present_params_.BackBufferWidth = width;
+	present_params_.BackBufferHeight = height;
 
 	HRESULT hr = d3d9_device_->Reset(&present_params_);
 	if (FAILED(hr)) {
@@ -104,6 +113,8 @@ bool D3D9Renderer::Resize()
 
 void D3D9Renderer::Render(PixelFrame* frame)
 {
+	std::lock_guard<std::mutex> locker(mutex_);
+
 	if (!d3d9_device_) {
 		return;
 	}
@@ -120,6 +131,11 @@ void D3D9Renderer::Render(PixelFrame* frame)
 	Copy(frame);
 	Process();
 	End();
+}
+
+IDirect3DDevice9* D3D9Renderer::GetDevice()
+{
+	return d3d9_device_;
 }
 
 void D3D9Renderer::SetSharpen(float unsharp)
@@ -403,7 +419,7 @@ void D3D9Renderer::End()
 			return ;
 		}
 
-		d3d9_device_->StretchRect(output_texture_->GetSurface(), NULL, back_buffer_, NULL, D3DTEXF_LINEAR);
+		d3d9_device_->StretchRect(output_texture_->GetSurface(), NULL, back_buffer_, NULL, D3DTEXF_NONE);
 		DX_SAFE_RELEASE(back_buffer_);
 		output_texture_ = NULL;
 	}
@@ -624,6 +640,6 @@ void D3D9Renderer::UpdateNV12(PixelFrame* frame)
 
 		// NV12 To ARGB
 		output_texture_ = input_texture_[PIXEL_PLANE_ARGB].get();
-		d3d9_device_->StretchRect(surface, NULL, output_texture_->GetSurface(), NULL, D3DTEXF_NONE);
+		d3d9_device_->StretchRect(surface, NULL, output_texture_->GetSurface(), NULL, D3DTEXF_LINEAR);
 	}
 }

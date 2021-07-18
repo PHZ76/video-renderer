@@ -32,6 +32,8 @@ D3D11Renderer::~D3D11Renderer()
 
 bool D3D11Renderer::Init(HWND hwnd)
 {
+	std::lock_guard<std::mutex> locker(mutex_);
+
 	wnd_ = hwnd;
 
 	if (!InitDevice()) {
@@ -50,6 +52,8 @@ bool D3D11Renderer::Init(HWND hwnd)
 
 void D3D11Renderer::Destroy()
 {
+	std::lock_guard<std::mutex> locker(mutex_);
+
 	for (int i = 0; i < PIXEL_PLANE_MAX; i++) {
 		input_texture_[i].reset();
 	}
@@ -76,12 +80,21 @@ void D3D11Renderer::Destroy()
 
 bool D3D11Renderer::Resize()
 {
+	std::lock_guard<std::mutex> locker(mutex_);
+
 	if (!swap_chain_) {
 		return false;
 	}
 
 	RECT rect;
 	if (!GetClientRect(wnd_, &rect)) {
+		return false;
+	}
+
+	UINT width = static_cast<UINT>(rect.right - rect.left);
+	UINT height = static_cast<UINT>(rect.bottom - rect.top);
+
+	if (width == 0 && height == 0) {
 		return false;
 	}
 
@@ -105,8 +118,8 @@ bool D3D11Renderer::Resize()
 
 	HRESULT hr = swap_chain_->ResizeBuffers(
 		0, 
-		static_cast<UINT>(rect.right - rect.left), 
-		static_cast<UINT>(rect.bottom - rect.top),
+		width,
+		height,
 		DXGI_FORMAT_UNKNOWN,
 		0
 	);
@@ -127,6 +140,8 @@ bool D3D11Renderer::Resize()
 
 void D3D11Renderer::Render(PixelFrame* frame)
 {
+	std::lock_guard<std::mutex> locker(mutex_);
+
 	if (!d3d11_device_) {
 		return;
 	}
@@ -352,7 +367,7 @@ bool D3D11Renderer::CreateRenderer()
 		return false;
 	}
 
-	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;// D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;// D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
 	hr = d3d11_device_->CreateSamplerState(&sampler_desc, &linear_sampler_);
 	if (FAILED(hr)) {
 		LOG("ID3D11Device::CreateSamplerState(LINEAR) failed, %x ", hr);

@@ -205,6 +205,7 @@ void D3D9RenderTexture::Begin()
 	d3dmatrix.m[3][0] = -1.0f;
 	d3dmatrix.m[3][1] =  1.0f;
 	d3dmatrix.m[3][3] =  1.0f;
+
 	//D3DXMatrixOrthoOffCenterLH(&projection, 0.0f, frame->width, frame->height, 0.0f, 0.0f, 1.0f);
 	d3d9_device_->SetTransform(D3DTS_PROJECTION, &d3dmatrix);
 

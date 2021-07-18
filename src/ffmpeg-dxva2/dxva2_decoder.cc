@@ -217,6 +217,7 @@ bool AVDecoder::Init(AVStream* stream, void* d3d9_device)
 		 av_hwdevice_ctx_create(&device_buffer_, hw_type, NULL, NULL, 0);
 	}
 
+	codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
 	codec_context_->get_format = get_dxva2_hw_format;
 	codec_context_->thread_count = 1;
 	codec_context_->pkt_timebase = stream->time_base;

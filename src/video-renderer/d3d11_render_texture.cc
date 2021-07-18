@@ -370,16 +370,18 @@ void D3D11RenderTexture::Cleanup()
 	DX_SAFE_RELEASE(vertex_layout_);
 	DX_SAFE_RELEASE(vertex_constants_);
 	DX_SAFE_RELEASE(vertex_shader_);
+	DX_SAFE_RELEASE(vertex_buffer_);
+	DX_SAFE_RELEASE(pixel_shader_);
 
 	DX_SAFE_RELEASE(texture_);
 	DX_SAFE_RELEASE(render_target_view_);
 	DX_SAFE_RELEASE(texture_view_);
+
 	DX_SAFE_RELEASE(chrominance_view_);
 	DX_SAFE_RELEASE(luminance_view_);
 
 	DX_SAFE_RELEASE(d3d11_device_);
 	DX_SAFE_RELEASE(d3d11_context_);
-	DX_SAFE_RELEASE(swap_chain_);
 }
 
 void D3D11RenderTexture::Begin()
@@ -404,13 +406,7 @@ void D3D11RenderTexture::Begin()
 	d3d11_context_->RSSetViewports(1, &viewport);
 
 	D3D11_MAPPED_SUBRESOURCE mapped_resource;
-	HRESULT hr = d3d11_context_->Map(
-		(ID3D11Resource*)vertex_buffer_, 
-		0,
-		D3D11_MAP_WRITE_DISCARD, 
-		0, 
-		&mapped_resource
-	);
+	HRESULT hr = d3d11_context_->Map(vertex_buffer_, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_resource);
 	if (FAILED(hr)) {
 		LOG("ID3D11DeviceContext::Map() failed, %x \n", hr);
 		return ;
@@ -509,6 +505,4 @@ void D3D11RenderTexture::End()
 	d3d11_context_->OMSetRenderTargets(1, &cache_render_target_view_, cache_depth_stencil_view_);
 	DX_SAFE_RELEASE(cache_render_target_view_);
 	DX_SAFE_RELEASE(cache_depth_stencil_view_);
-
-
 }

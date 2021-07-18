@@ -113,13 +113,14 @@ bool AVDecoder::Init(AVStream* stream, void* d3d11_device)
 		d3d11_device_context->device->AddRef();
 		av_hwdevice_ctx_init(device_buffer_);
 
-		//codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
+		codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
 		codec_context_->opaque = device_buffer_;
 	}
 	else {
 		 av_hwdevice_ctx_create(&device_buffer_, hw_type, NULL, NULL, 0);
 	}
 
+	codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
 	codec_context_->get_format = get_d3d11va_hw_format;
 	codec_context_->thread_count = 1;
 	codec_context_->pkt_timebase = stream->time_base;

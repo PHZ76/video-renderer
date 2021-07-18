@@ -8,7 +8,7 @@ sampler ImageSampler = sampler_state
     Texture   = <ImageTexture>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
-    MipFilter = NONE;
+    MipFilter = POINT;
     AddressU  = WRAP;
     AddressV  = WRAP;
 };

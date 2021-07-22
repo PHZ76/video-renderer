@@ -32,9 +32,6 @@ int main(int argc, char** argv)
 
 	renderer.SetSharpen(0.5);
 
-	//int original_width = 0, original_height = 0;
-	//GetWindowSize(window.GetHandle(), original_width, original_height);
-
 	bool abort_request = false;
 	std::string pathname = "piper.h264";
 
@@ -85,23 +82,15 @@ int main(int argc, char** argv)
 	MSG msg;
 	ZeroMemory(&msg, sizeof(msg));
 
-	xop::PixelFormat render_format = xop::PIXEL_FORMAT_I420;
-
 	while (msg.message != WM_QUIT) {
 		if (::PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
 			::TranslateMessage(&msg);
 			::DispatchMessage(&msg);
 			continue;
 		}
-		//else {
-		//	int current_width = 0, current_height = 0;
-		//	GetWindowSize(window.GetHandle(), current_width, current_height);
-		//	if (current_width != original_width || current_height != original_height) {
-		//		original_width = current_width;
-		//		original_height = current_height;
-		//		renderer.Resize();
-		//	}
-		//}
+		else {
+			Sleep(1);
+		}		
 	}
 
 	abort_request = true;

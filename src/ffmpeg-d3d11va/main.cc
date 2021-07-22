@@ -86,8 +86,6 @@ int main(int argc, char** argv)
 	MSG msg;
 	ZeroMemory(&msg, sizeof(msg));
 
-	xop::PixelFormat render_format = xop::PIXEL_FORMAT_I420;
-
 	while (msg.message != WM_QUIT) {
 		if (::PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
 			::TranslateMessage(&msg);
@@ -102,7 +100,8 @@ int main(int argc, char** argv)
 				original_height = current_height;
 				renderer.Resize();
 			}
-		}
+			Sleep(1);
+		}		
 	}
 
 	abort_request = true;

@@ -761,7 +761,7 @@ void D3D11Renderer::UpdateNV12(PixelFrame* frame)
 			int pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
 
 			for (int i = 0; i < frame->height; i++) {
-				memcpy(dst_data, src_data, src_pitch);
+				memcpy(dst_data, src_data, pitch);
 				src_data += src_pitch;
 				dst_data += dst_pitch;
 			}
@@ -771,7 +771,7 @@ void D3D11Renderer::UpdateNV12(PixelFrame* frame)
 			pitch = (src_pitch <= dst_pitch) ? src_pitch : dst_pitch;
 
 			for (int i = 0; i < half_height; i++) {
-				memcpy(dst_data, src_data, src_pitch);
+				memcpy(dst_data, src_data, pitch);
 				src_data += src_pitch;
 				dst_data += dst_pitch;
 			}

@@ -382,6 +382,7 @@ void D3D11RenderTexture::Cleanup()
 
 	DX_SAFE_RELEASE(d3d11_device_);
 	DX_SAFE_RELEASE(d3d11_context_);
+	DX_SAFE_RELEASE(swap_chain_);
 }
 
 void D3D11RenderTexture::Begin()

@@ -79,6 +79,15 @@
     <ClInclude Include="shader\d3d11\shader_d3d11_pixel.h">
       <Filter>源文件\shader\d3d11</Filter>
     </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_rgb_to_chroma420.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_rgb_to_yuv420.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\d3d11\shader_d3d11_yuv_to_rgb.h">
+      <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\d3d9\d3d9_yuv_bt601.hlsl">
@@ -109,6 +118,15 @@
       <Filter>源文件\shader\d3d11</Filter>
     </FxCompile>
     <FxCompile Include="shader\d3d11\d3d11_pixel.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_rgb_to_chroma420.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_rgb_to_yuv420.hlsl">
+      <Filter>源文件\shader\d3d11</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_yuv_to_rgb.hlsl">
       <Filter>源文件\shader\d3d11</Filter>
     </FxCompile>
   </ItemGroup>

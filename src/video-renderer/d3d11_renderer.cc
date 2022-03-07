@@ -41,7 +41,7 @@ bool D3D11Renderer::Init(HWND hwnd)
 	}
 
 	if (!CreateRenderer()) {
-		DX_SAFE_RELEASE(swap_chain_);
+		DX_SAFE_RELEASE(dxgi_swap_chain_);
 		DX_SAFE_RELEASE(d3d11_context_);
 		DX_SAFE_RELEASE(d3d11_device_);
 		return false;
@@ -55,11 +55,11 @@ void D3D11Renderer::Destroy()
 	std::lock_guard<std::mutex> locker(mutex_);
 
 	for (int i = 0; i < PIXEL_PLANE_MAX; i++) {
-		input_texture_[i].reset();
+		input_textures_[i].reset();
 	}
 
 	for (int i = 0; i < PIXEL_SHADER_MAX; i++) {
-		render_target_[i].reset();
+		render_targets_[i].reset();
 	}
 
 	if (d3d11_context_) {
@@ -70,7 +70,7 @@ void D3D11Renderer::Destroy()
 	DX_SAFE_RELEASE(point_sampler_);
 	DX_SAFE_RELEASE(linear_sampler_);
 	DX_SAFE_RELEASE(main_render_target_view_);
-	DX_SAFE_RELEASE(swap_chain_);
+	DX_SAFE_RELEASE(dxgi_swap_chain_);
 	DX_SAFE_RELEASE(d3d11_context_);
 	DX_SAFE_RELEASE(d3d11_device_);
 
@@ -82,7 +82,7 @@ bool D3D11Renderer::Resize()
 {
 	std::lock_guard<std::mutex> locker(mutex_);
 
-	if (!swap_chain_) {
+	if (!dxgi_swap_chain_) {
 		return false;
 	}
 
@@ -109,14 +109,14 @@ bool D3D11Renderer::Resize()
 	height_ = 0;
 
 	for (int i = 0; i < PIXEL_PLANE_MAX; i++) {
-		input_texture_[i].reset();
+		input_textures_[i].reset();
 	}
 
 	for (int i = 0; i < PIXEL_SHADER_MAX; i++) {
-		render_target_[i].reset();
+		render_targets_[i].reset();
 	}
 
-	HRESULT hr = swap_chain_->ResizeBuffers(
+	HRESULT hr = dxgi_swap_chain_->ResizeBuffers(
 		0, 
 		width,
 		height,
@@ -160,7 +160,12 @@ void D3D11Renderer::Render(PixelFrame* frame)
 	End();
 }
 
-ID3D11Device* D3D11Renderer::GetDevice()
+IDXGISwapChain* D3D11Renderer::GetDXGISwapChain()
+{
+	return dxgi_swap_chain_;
+}
+
+ID3D11Device* D3D11Renderer::GetD3D11Device()
 {
 	return d3d11_device_;
 }
@@ -179,7 +184,7 @@ bool D3D11Renderer::InitDevice()
 
 	UINT device_flags = 0;
 #ifdef _DEBUG
-	device_flags |= D3D11_CREATE_DEVICE_DEBUG;
+	//device_flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
 	D3D_DRIVER_TYPE driver_types[] =
@@ -269,7 +274,7 @@ bool D3D11Renderer::InitDevice()
 	swap_chain_desc.SampleDesc.Quality = 0;
 	swap_chain_desc.Windowed = TRUE;
 
-	hr = dxgi_factory->CreateSwapChain(d3d11_device_, &swap_chain_desc, &swap_chain_);
+	hr = dxgi_factory->CreateSwapChain(d3d11_device_, &swap_chain_desc, &dxgi_swap_chain_);
 	DX_SAFE_RELEASE(dxgi_factory);
 	if (FAILED(hr)) {
 		LOG("Create swap chain failed, %x \n", hr);
@@ -279,7 +284,7 @@ bool D3D11Renderer::InitDevice()
 	return true;
 
 failed:
-	DX_SAFE_RELEASE(swap_chain_);
+	DX_SAFE_RELEASE(dxgi_swap_chain_);
 	DX_SAFE_RELEASE(d3d11_device_);
 	DX_SAFE_RELEASE(d3d11_context_);
 	return false;
@@ -292,11 +297,11 @@ bool D3D11Renderer::CreateRenderer()
 	}
 
 	for (int i = 0; i < PIXEL_SHADER_MAX; i++) {
-		render_target_[i].reset(new D3D11RenderTexture(swap_chain_));
+		render_targets_[i].reset(new D3D11RenderTexture(dxgi_swap_chain_));
 	}
 
 	ID3D11Texture2D* back_buffer = NULL;
-	HRESULT hr = swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&back_buffer));
+	HRESULT hr = dxgi_swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&back_buffer));
 
 	D3D11_TEXTURE2D_DESC desc;
 	back_buffer->GetDesc(&desc);
@@ -314,7 +319,7 @@ bool D3D11Renderer::CreateRenderer()
 	D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
 
 	for (int i = 0; i < PIXEL_SHADER_MAX; i++) {
-		auto render_target = render_target_[i].get();
+		auto render_target = render_targets_[i].get();
 		render_target->InitTexture(desc.Width, desc.Height, desc.Format, usage, bind_flags, cpu_flags, misc_flags);
 		render_target->InitVertexShader();
 		render_target->InitRasterizerState();
@@ -352,9 +357,9 @@ bool D3D11Renderer::CreateRenderer()
 	D3D11_SAMPLER_DESC sampler_desc;
 	memset(&sampler_desc, 0, sizeof(D3D11_SAMPLER_DESC));
 	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampler_desc.MipLODBias = 0.0f;
 	sampler_desc.MaxAnisotropy = 1;
 	sampler_desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
@@ -384,7 +389,7 @@ bool D3D11Renderer::CreateTexture(int width, int height, PixelFormat format)
 	}
 
 	for (int i = 0; i < PIXEL_PLANE_MAX; i++) {
-		input_texture_[i].reset(new D3D11RenderTexture(swap_chain_));
+		input_textures_[i].reset(new D3D11RenderTexture(dxgi_swap_chain_));
 	}
 
 	D3D11_USAGE usage = D3D11_USAGE_DYNAMIC;
@@ -395,23 +400,23 @@ bool D3D11Renderer::CreateTexture(int width, int height, PixelFormat format)
 
 	if (format == PIXEL_FORMAT_I420) {
 		DXGI_FORMAT dxgi_format = DXGI_FORMAT_R8_UNORM;
-		input_texture_[PIXEL_PLANE_Y]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
-		input_texture_[PIXEL_PLANE_U]->InitTexture(half_width, half_height, dxgi_format, usage, bind_flags, cpu_flags, 0);
-		input_texture_[PIXEL_PLANE_V]->InitTexture(half_width, half_height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_Y]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_U]->InitTexture(half_width, half_height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_V]->InitTexture(half_width, half_height, dxgi_format, usage, bind_flags, cpu_flags, 0);
 	}
 	else if (format == PIXEL_FORMAT_I444) {
 		DXGI_FORMAT dxgi_format = DXGI_FORMAT_R8_UNORM;
-		input_texture_[PIXEL_PLANE_Y]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
-		input_texture_[PIXEL_PLANE_U]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
-		input_texture_[PIXEL_PLANE_V]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_Y]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_U]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_V]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
 	}
 	else if (format == PIXEL_FORMAT_ARGB) {
 		DXGI_FORMAT dxgi_format = DXGI_FORMAT_B8G8R8A8_UNORM;
-		input_texture_[PIXEL_PLANE_ARGB]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_ARGB]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
 	}
 	else if (format == PIXEL_FORMAT_NV12) {
 		DXGI_FORMAT dxgi_format = DXGI_FORMAT_NV12;
-		input_texture_[PIXEL_PLANE_NV12]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
+		input_textures_[PIXEL_PLANE_NV12]->InitTexture(width, height, dxgi_format, usage, bind_flags, cpu_flags, 0);
 	}
 
 	width_ = width;
@@ -436,26 +441,26 @@ void D3D11Renderer::Copy(PixelFrame* frame)
 	}
 
 	if (frame->format == PIXEL_FORMAT_I420) {
-		if (input_texture_[PIXEL_PLANE_Y] &&
-			input_texture_[PIXEL_PLANE_U] &&
-			input_texture_[PIXEL_PLANE_V]) {
+		if (input_textures_[PIXEL_PLANE_Y] &&
+			input_textures_[PIXEL_PLANE_U] &&
+			input_textures_[PIXEL_PLANE_V]) {
 			UpdateI420(frame);
 		}
 	}
 	else if (frame->format == PIXEL_FORMAT_I444) {
-		if (input_texture_[PIXEL_PLANE_Y] &&
-			input_texture_[PIXEL_PLANE_U] &&
-			input_texture_[PIXEL_PLANE_V]) {
+		if (input_textures_[PIXEL_PLANE_Y] &&
+			input_textures_[PIXEL_PLANE_U] &&
+			input_textures_[PIXEL_PLANE_V]) {
 			UpdateI444(frame);
 		}
 	}
 	else if (frame->format == PIXEL_FORMAT_ARGB) {
-		if (input_texture_[PIXEL_PLANE_ARGB]) {
+		if (input_textures_[PIXEL_PLANE_ARGB]) {
 			UpdateARGB(frame);
 		}
 	}
 	else if (frame->format == PIXEL_FORMAT_NV12) {
-		if (input_texture_[PIXEL_PLANE_NV12]) {
+		if (input_textures_[PIXEL_PLANE_NV12]) {
 			UpdateNV12(frame);
 		}
 	}
@@ -470,7 +475,7 @@ void D3D11Renderer::Process()
 	if (unsharp_ > 0) {
 		float width = static_cast<float>(width_);
 		float height = static_cast<float>(height_);
-		D3D11RenderTexture* render_target = render_target_[PIXEL_SHADER_SHARPEN].get();
+		D3D11RenderTexture* render_target = render_targets_[PIXEL_SHADER_SHARPEN].get();
 
 		SharpenShaderConstants sharpen_shader_constants;
 		sharpen_shader_constants.width = static_cast<float>(width);
@@ -479,7 +484,7 @@ void D3D11Renderer::Process()
 		d3d11_context_->UpdateSubresource((ID3D11Resource*)sharpen_constants_, 0, NULL, &sharpen_shader_constants, 0, 0);
 
 		render_target->Begin();
-		render_target->PSSetTexture(0, output_texture_->GetTextureView());
+		render_target->PSSetTexture(0, output_texture_->GetShaderResourceView());
 		render_target->PSSetConstant(0, sharpen_constants_);
 		render_target->PSSetSamplers(0, linear_sampler_);
 		render_target->PSSetSamplers(1, point_sampler_);
@@ -492,14 +497,14 @@ void D3D11Renderer::Process()
 
 void D3D11Renderer::End()
 {
-	if (!swap_chain_) {
+	if (!dxgi_swap_chain_) {
 		return ;
 	}
 
 	if (output_texture_) {
 		ID3D11Texture2D* texture = output_texture_->GetTexture();
 		ID3D11Texture2D* back_buffer = NULL;
-		HRESULT hr = swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&back_buffer));
+		HRESULT hr = dxgi_swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&back_buffer));
 		if (SUCCEEDED(hr)) {
 			d3d11_context_->CopyResource(back_buffer, texture);
 			back_buffer->Release();
@@ -507,7 +512,7 @@ void D3D11Renderer::End()
 		output_texture_ = NULL;
 	}
 
-	HRESULT hr = swap_chain_->Present(0, 0);
+	HRESULT hr = dxgi_swap_chain_->Present(0, 0);
 
 	if (FAILED(hr) && hr != DXGI_ERROR_WAS_STILL_DRAWING) {
 		if (hr == DXGI_ERROR_DEVICE_REMOVED) {
@@ -525,8 +530,8 @@ void D3D11Renderer::UpdateARGB(PixelFrame* frame)
 	HRESULT hr = S_OK;
 	D3D11_MAPPED_SUBRESOURCE map;
 
-	ID3D11Texture2D* texture = input_texture_[PIXEL_PLANE_ARGB]->GetTexture();
-	ID3D11ShaderResourceView*  shader_resource_view = input_texture_[PIXEL_PLANE_ARGB]->GetTextureView();
+	ID3D11Texture2D* texture = input_textures_[PIXEL_PLANE_ARGB]->GetTexture();
+	ID3D11ShaderResourceView*  shader_resource_view = input_textures_[PIXEL_PLANE_ARGB]->GetShaderResourceView();
 	UINT sub_resource = ::D3D11CalcSubresource(0, 0, 1);
 
 	if (texture) {
@@ -553,7 +558,7 @@ void D3D11Renderer::UpdateARGB(PixelFrame* frame)
 
 		d3d11_context_->Unmap((ID3D11Resource*)texture, sub_resource);
 
-		D3D11RenderTexture* render_target = render_target_[PIXEL_SHADER_ARGB].get();
+		D3D11RenderTexture* render_target = render_targets_[PIXEL_SHADER_ARGB].get();
 		render_target->Begin();
 		render_target->PSSetTexture(0, shader_resource_view);
 		render_target->PSSetSamplers(0, linear_sampler_);
@@ -567,12 +572,12 @@ void D3D11Renderer::UpdateARGB(PixelFrame* frame)
 
 void D3D11Renderer::UpdateI444(PixelFrame* frame)
 {
-	ID3D11Texture2D* y_texture = input_texture_[PIXEL_PLANE_Y]->GetTexture();
-	ID3D11Texture2D* u_texture = input_texture_[PIXEL_PLANE_U]->GetTexture();
-	ID3D11Texture2D* v_texture = input_texture_[PIXEL_PLANE_V]->GetTexture();
-	ID3D11ShaderResourceView* y_texture_view = input_texture_[PIXEL_PLANE_Y]->GetTextureView();
-	ID3D11ShaderResourceView* u_texture_view = input_texture_[PIXEL_PLANE_U]->GetTextureView();
-	ID3D11ShaderResourceView* v_texture_view = input_texture_[PIXEL_PLANE_V]->GetTextureView();
+	ID3D11Texture2D* y_texture = input_textures_[PIXEL_PLANE_Y]->GetTexture();
+	ID3D11Texture2D* u_texture = input_textures_[PIXEL_PLANE_U]->GetTexture();
+	ID3D11Texture2D* v_texture = input_textures_[PIXEL_PLANE_V]->GetTexture();
+	ID3D11ShaderResourceView* y_texture_view = input_textures_[PIXEL_PLANE_Y]->GetShaderResourceView();
+	ID3D11ShaderResourceView* u_texture_view = input_textures_[PIXEL_PLANE_U]->GetShaderResourceView();
+	ID3D11ShaderResourceView* v_texture_view = input_textures_[PIXEL_PLANE_V]->GetShaderResourceView();
 
 	D3D11_MAPPED_SUBRESOURCE map;
 	HRESULT hr = S_OK;
@@ -634,7 +639,7 @@ void D3D11Renderer::UpdateI444(PixelFrame* frame)
 		d3d11_context_->Unmap((ID3D11Resource*)v_texture, sub_resource);
 	}
 
-	D3D11RenderTexture* render_target = render_target_[PIXEL_SHADER_YUV_BT601].get();
+	D3D11RenderTexture* render_target = render_targets_[PIXEL_SHADER_YUV_BT601].get();
 	if (render_target) {
 		render_target->Begin();
 		render_target->PSSetTexture(0, y_texture_view);
@@ -653,12 +658,12 @@ void D3D11Renderer::UpdateI444(PixelFrame* frame)
 
 void D3D11Renderer::UpdateI420(PixelFrame* frame)
 {
-	ID3D11Texture2D* y_texture = input_texture_[PIXEL_PLANE_Y]->GetTexture();
-	ID3D11Texture2D* u_texture = input_texture_[PIXEL_PLANE_U]->GetTexture();
-	ID3D11Texture2D* v_texture = input_texture_[PIXEL_PLANE_V]->GetTexture();
-	ID3D11ShaderResourceView* y_texture_view = input_texture_[PIXEL_PLANE_Y]->GetTextureView();
-	ID3D11ShaderResourceView* u_texture_view = input_texture_[PIXEL_PLANE_U]->GetTextureView();
-	ID3D11ShaderResourceView* v_texture_view = input_texture_[PIXEL_PLANE_V]->GetTextureView();
+	ID3D11Texture2D* y_texture = input_textures_[PIXEL_PLANE_Y]->GetTexture();
+	ID3D11Texture2D* u_texture = input_textures_[PIXEL_PLANE_U]->GetTexture();
+	ID3D11Texture2D* v_texture = input_textures_[PIXEL_PLANE_V]->GetTexture();
+	ID3D11ShaderResourceView* y_texture_view = input_textures_[PIXEL_PLANE_Y]->GetShaderResourceView();
+	ID3D11ShaderResourceView* u_texture_view = input_textures_[PIXEL_PLANE_U]->GetShaderResourceView();
+	ID3D11ShaderResourceView* v_texture_view = input_textures_[PIXEL_PLANE_V]->GetShaderResourceView();
 
 	D3D11_MAPPED_SUBRESOURCE map;
 	HRESULT hr = S_OK;
@@ -722,7 +727,7 @@ void D3D11Renderer::UpdateI420(PixelFrame* frame)
 		d3d11_context_->Unmap((ID3D11Resource*)v_texture, sub_resource);
 	}
 
-	D3D11RenderTexture* render_target = render_target_[PIXEL_SHADER_YUV_BT601].get();
+	D3D11RenderTexture* render_target = render_targets_[PIXEL_SHADER_YUV_BT601].get();
 	if (render_target) {
 		render_target->Begin();
 		render_target->PSSetTexture(0, y_texture_view);
@@ -741,9 +746,9 @@ void D3D11Renderer::UpdateI420(PixelFrame* frame)
 
 void D3D11Renderer::UpdateNV12(PixelFrame* frame)
 {
-	ID3D11Texture2D* texture = input_texture_[PIXEL_PLANE_NV12]->GetTexture();
-	ID3D11ShaderResourceView* luminance_view = input_texture_[PIXEL_PLANE_NV12]->GetLuminanceView();
-	ID3D11ShaderResourceView* chrominance_view = input_texture_[PIXEL_PLANE_NV12]->GetChrominanceView();
+	ID3D11Texture2D* texture = input_textures_[PIXEL_PLANE_NV12]->GetTexture();
+	ID3D11ShaderResourceView* luminance_view = input_textures_[PIXEL_PLANE_NV12]->GetNV12YShaderResourceView();
+	ID3D11ShaderResourceView* chrominance_view = input_textures_[PIXEL_PLANE_NV12]->GetNV12UVShaderResourceView();
 
 	D3D11_MAPPED_SUBRESOURCE map;
 	HRESULT hr = S_OK;
@@ -779,7 +784,7 @@ void D3D11Renderer::UpdateNV12(PixelFrame* frame)
 		d3d11_context_->Unmap((ID3D11Resource*)texture, sub_resource);
 	}
 
-	D3D11RenderTexture* render_target = render_target_[PIXEL_SHADER_NV12_BT601].get();
+	D3D11RenderTexture* render_target = render_targets_[PIXEL_SHADER_NV12_BT601].get();
 	if (render_target) {
 		render_target->Begin();
 		render_target->PSSetTexture(0, luminance_view);

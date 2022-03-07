@@ -25,7 +25,7 @@ void D3D11VARenderer::RenderFrame(AVFrame* frame)
 	texture->GetDesc(&desc);
 
 	if (pixel_format_ != xop::PIXEL_FORMAT_NV12 ||
-		width_!=desc.Width ||height_!=desc.Height) {
+		width_ != desc.Width || height_ != desc.Height) {
 		if (!CreateTexture(desc.Width, desc.Height, xop::PIXEL_FORMAT_NV12)) {
 			return;
 		}
@@ -33,9 +33,9 @@ void D3D11VARenderer::RenderFrame(AVFrame* frame)
 
 	Begin();
 
-	ID3D11Texture2D* nv12_texture = input_texture_[xop::PIXEL_PLANE_NV12]->GetTexture();
-	ID3D11ShaderResourceView* luminance_view = input_texture_[xop::PIXEL_PLANE_NV12]->GetLuminanceView();
-	ID3D11ShaderResourceView* chrominance_view = input_texture_[xop::PIXEL_PLANE_NV12]->GetChrominanceView();
+	ID3D11Texture2D* nv12_texture = input_textures_[xop::PIXEL_PLANE_NV12]->GetTexture();
+	ID3D11ShaderResourceView* nv12_texture_y_srv = input_textures_[xop::PIXEL_PLANE_NV12]->GetNV12YShaderResourceView();
+	ID3D11ShaderResourceView* nv12_texture_uv_srv = input_textures_[xop::PIXEL_PLANE_NV12]->GetNV12UVShaderResourceView();
 
 	d3d11_context_->CopySubresourceRegion(
 		nv12_texture,
@@ -47,11 +47,11 @@ void D3D11VARenderer::RenderFrame(AVFrame* frame)
 		index,
 		NULL);
 
-	xop::D3D11RenderTexture* render_target = render_target_[xop::PIXEL_SHADER_NV12_BT601].get();
+	xop::D3D11RenderTexture* render_target = render_targets_[xop::PIXEL_SHADER_NV12_BT601].get();
 	if (render_target) {
 		render_target->Begin();
-		render_target->PSSetTexture(0, luminance_view);
-		render_target->PSSetTexture(1, chrominance_view);
+		render_target->PSSetTexture(0, nv12_texture_y_srv);
+		render_target->PSSetTexture(1, nv12_texture_uv_srv);
 		render_target->PSSetSamplers(0, linear_sampler_);
 		render_target->PSSetSamplers(1, point_sampler_);
 		render_target->Draw();

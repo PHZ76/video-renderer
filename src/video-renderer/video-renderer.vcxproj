@@ -34,9 +34,12 @@
     <ClInclude Include="shader\d3d11\shader_d3d11_nv12_bt601.h" />
     <ClInclude Include="shader\d3d11\shader_d3d11_nv12_bt709.h" />
     <ClInclude Include="shader\d3d11\shader_d3d11_pixel.h" />
+    <ClInclude Include="shader\d3d11\shader_d3d11_rgb_to_chroma420.h" />
+    <ClInclude Include="shader\d3d11\shader_d3d11_rgb_to_yuv420.h" />
     <ClInclude Include="shader\d3d11\shader_d3d11_vertex.h" />
     <ClInclude Include="shader\d3d11\shader_d3d11_yuv_bt601.h" />
     <ClInclude Include="shader\d3d11\shader_d3d11_yuv_bt709.h" />
+    <ClInclude Include="shader\d3d11\shader_d3d11_yuv_to_rgb.h" />
     <ClInclude Include="shader\d3d9\shader_d3d9_sharpness.h" />
     <ClInclude Include="shader\d3d9\shader_d3d9_yuv_bt601.h" />
     <ClInclude Include="shader\d3d9\shader_d3d9_yuv_bt709.h" />
@@ -83,6 +86,22 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_rgb_to_chroma420.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader_%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_rgb_to_yuv420.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader_%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
     </FxCompile>
     <FxCompile Include="shader\d3d11\d3d11_sharpen.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -140,6 +159,14 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\d3d11\d3d11_yuv_to_rgb.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader_%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader_%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">./shader/d3d11/shader_%(Filename).h</HeaderFileOutput>
     </FxCompile>
     <FxCompile Include="shader\d3d9\d3d9_sharpness.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -214,26 +241,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

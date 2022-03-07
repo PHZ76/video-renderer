@@ -37,7 +37,7 @@ bool D3D11ScreenCapture::Init(int display_index)
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			AcquireFrame();
 		}
-	}));
+		}));
 
 	return true;
 
@@ -134,13 +134,13 @@ void D3D11ScreenCapture::CleanupD3D11()
 
 bool D3D11ScreenCapture::CreateTexture()
 {
-	D3D11_TEXTURE2D_DESC desc = {0};
+	D3D11_TEXTURE2D_DESC desc = { 0 };
 	desc.Width = dxgi_desc_.ModeDesc.Width;
 	desc.Height = dxgi_desc_.ModeDesc.Height;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	desc.BindFlags = 0;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.SampleDesc.Count = 1;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.CPUAccessFlags = 0;
@@ -151,7 +151,8 @@ bool D3D11ScreenCapture::CreateTexture()
 		printf("[D3D11ScreenCapture] Failed to create texture.\n");
 		return false;
 	}
-	
+
+	desc.BindFlags = 0;
 	desc.Usage = D3D11_USAGE_STAGING;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	desc.MiscFlags = 0;
@@ -174,7 +175,7 @@ bool D3D11ScreenCapture::CreateTexture()
 	}
 
 	Microsoft::WRL::ComPtr<IDXGIResource> dxgi_resource;
-	hr = shared_texture_->QueryInterface(__uuidof(IDXGIResource), reinterpret_cast<void **>(dxgi_resource.GetAddressOf()));
+	hr = shared_texture_->QueryInterface(__uuidof(IDXGIResource), reinterpret_cast<void**>(dxgi_resource.GetAddressOf()));
 	if (FAILED(hr)) {
 		printf("[D3D11ScreenCapture] Failed to query IDXGIResource interface from texture.\n");
 		return false;
@@ -205,15 +206,15 @@ int D3D11ScreenCapture::AcquireFrame()
 	Microsoft::WRL::ComPtr<IDXGIResource> dxgi_resource;
 	DXGI_OUTDUPL_FRAME_INFO frame_info;
 	memset(&frame_info, 0, sizeof(DXGI_OUTDUPL_FRAME_INFO));
-		
+
 	dxgi_output_duplication_->ReleaseFrame();
 	HRESULT hr = dxgi_output_duplication_->AcquireNextFrame(0, &frame_info, dxgi_resource.GetAddressOf());
-	
+
 	if (FAILED(hr)) {
 		if (hr == DXGI_ERROR_WAIT_TIMEOUT) {
 			return -1;
 		}
-		else if (hr == DXGI_ERROR_INVALID_CALL 
+		else if (hr == DXGI_ERROR_INVALID_CALL
 			|| hr == DXGI_ERROR_ACCESS_LOST) {
 			CleanupD3D11();
 			InitD3D11();
@@ -222,7 +223,7 @@ int D3D11ScreenCapture::AcquireFrame()
 		return -3;
 	}
 
-	if (frame_info.AccumulatedFrames == 0 || 
+	if (frame_info.AccumulatedFrames == 0 ||
 		frame_info.LastPresentTime.QuadPart == 0) {
 		// No image update, only cursor moved.
 	}
@@ -232,15 +233,15 @@ int D3D11ScreenCapture::AcquireFrame()
 	}
 
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> output_texture;
-	hr = dxgi_resource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(output_texture.GetAddressOf()));
+	hr = dxgi_resource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void**>(output_texture.GetAddressOf()));
 	if (FAILED(hr)) {
 		return -1;
 	}
 
 	d3d11_context_->CopyResource(gdi_texture_.Get(), output_texture.Get());
-	
+
 	Microsoft::WRL::ComPtr<IDXGISurface1> surface1;
-	hr = gdi_texture_->QueryInterface(__uuidof(IDXGISurface1), reinterpret_cast<void **>(surface1.GetAddressOf()));
+	hr = gdi_texture_->QueryInterface(__uuidof(IDXGISurface1), reinterpret_cast<void**>(surface1.GetAddressOf()));
 	if (FAILED(hr)) {
 		return -1;
 	}
@@ -297,15 +298,17 @@ bool D3D11ScreenCapture::Capture(Image& image)
 		return false;
 	}
 
-	if (image_size_ > 0) {
-		if (image.bgra.size() != image_size_) {
-			image.bgra.resize(image_size_);
-		}
-
-		image.bgra.assign(image_.get(), image_.get() + image_size_);
-		image.width = dxgi_desc_.ModeDesc.Width;
-		image.height = dxgi_desc_.ModeDesc.Height;
+	if (image_size_ == 0) {
+		return false;
 	}
+
+	if (image.bgra.size() != image_size_) {
+		image.bgra.resize(image_size_);
+	}
+
+	image.bgra.assign(image_.get(), image_.get() + image_size_);
+	image.width = dxgi_desc_.ModeDesc.Width;
+	image.height = dxgi_desc_.ModeDesc.Height;
 
 	if (shared_handle_) {
 		image.shared_handle = shared_handle_;
@@ -327,15 +330,15 @@ bool D3D11ScreenCapture::SaveToFile(std::string pathname)
 		return false;
 	}
 
-	unsigned char file_header[54] = {  
+	unsigned char file_header[54] = {
 		0x42, 0x4d, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0,   /*file header*/
 		40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 32, 0,  /*info header*/
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0
 	};
 
-	uint32_t image_width  = image.width;
+	uint32_t image_width = image.width;
 	uint32_t image_height = image.height;
-	uint32_t image_size   = image_width * image_height * 4;
+	uint32_t image_size = image_width * image_height * 4;
 	uint32_t file_size = sizeof(file_header) + image_size;
 
 	file_header[2] = (uint8_t)file_size;
@@ -356,7 +359,7 @@ bool D3D11ScreenCapture::SaveToFile(std::string pathname)
 	fp_out.write((char*)file_header, 54);
 
 	char* image_data = (char*)(&image.bgra[0]);
-	for (int h = image_height-1; h >= 0; h--) {
+	for (int h = image_height - 1; h >= 0; h--) {
 		fp_out.write(image_data + h * image_width * 4, image_width * 4);
 	}
 

@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 
 		video_stream = demuxer.GetVideoStream();
 
-		if (!decoder.Init(video_stream, renderer.GetDevice())) {
+		if (!decoder.Init(video_stream, renderer.GetD3D11Device())) {
 			abort_request = true;
 		}
 

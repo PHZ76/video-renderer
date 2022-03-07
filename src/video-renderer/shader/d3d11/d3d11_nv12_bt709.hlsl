@@ -16,17 +16,17 @@ struct PixelShaderInput
 float4 main(PixelShaderInput input) : SV_TARGET
 {
     const float3 offset = {-0.0627451017, -0.501960814, -0.501960814};
-    const float3 Rcoeff = {1.1644,  0.0000,  1.5960};
-    const float3 Gcoeff = {1.1644, -0.3918, -0.8130};
-    const float3 Bcoeff = {1.1644,  2.0172,  0.0000};
+    const float3 Rcoeff = {1.1644,  0.0000,  1.7927};
+    const float3 Gcoeff = {1.1644, -0.2132, -0.5329};
+    const float3 Bcoeff = {1.1644,  2.1124,  0.0000};
 
     float4 Output;
 
     float3 yuv;
     yuv.x = YTexture.Sample(LinearSampler, input.tex).r;
     yuv.yz = UVTexture.Sample(LinearSampler, input.tex).rg;
-
     yuv += offset;
+
     Output.r = dot(yuv, Rcoeff);
     Output.g = dot(yuv, Gcoeff);
     Output.b = dot(yuv, Bcoeff);

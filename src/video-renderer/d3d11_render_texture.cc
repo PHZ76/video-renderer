@@ -55,11 +55,10 @@ static HRESULT CompileShaderFromFile(const WCHAR* file_name, LPCSTR entry_point,
 	return hr;
 }
 
-D3D11RenderTexture::D3D11RenderTexture(IDXGISwapChain* dxgi_swap_chain)
+D3D11RenderTexture::D3D11RenderTexture(ID3D11Device* d3d11_device)
+	: d3d11_device_(d3d11_device)
 {
-	dxgi_swap_chain_ = dxgi_swap_chain;
-	dxgi_swap_chain_->AddRef();
-	dxgi_swap_chain_->GetDevice(__uuidof(ID3D11Device), (void**)&d3d11_device_);
+	d3d11_device_->AddRef();
 	d3d11_device_->GetImmediateContext(&d3d11_context_);
 }
 
@@ -423,7 +422,6 @@ void D3D11RenderTexture::Cleanup()
 
 	DX_SAFE_RELEASE(d3d11_device_);
 	DX_SAFE_RELEASE(d3d11_context_);
-	DX_SAFE_RELEASE(dxgi_swap_chain_);
 }
 
 void D3D11RenderTexture::Begin()

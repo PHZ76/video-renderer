@@ -8,7 +8,7 @@ namespace xop {
 class D3D11YUVToRGBConverter
 {
 public:
-	D3D11YUVToRGBConverter(IDXGISwapChain* swap_chain);
+	D3D11YUVToRGBConverter(ID3D11Device* d3d11_device);
 	virtual ~D3D11YUVToRGBConverter();
 
 	bool Init(int width, int height);
@@ -26,7 +26,6 @@ private:
 	int width_ = 0;
 	int height_ = 0;
 
-	IDXGISwapChain* swap_chain_ = NULL;
 	ID3D11Device* d3d11_device_ = NULL;
 	ID3D11DeviceContext* d3d11_context_ = NULL;
 	ID3D11SamplerState* point_sampler_ = NULL;

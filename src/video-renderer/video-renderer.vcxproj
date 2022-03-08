@@ -21,12 +21,16 @@
   <ItemGroup>
     <ClCompile Include="d3d11_renderer.cc" />
     <ClCompile Include="d3d11_render_texture.cc" />
+    <ClCompile Include="d3d11_rgb_to_yuv_converter.cc" />
+    <ClCompile Include="d3d11_yuv_to_rgb_converter.cc" />
     <ClCompile Include="d3d9_renderer.cc" />
     <ClCompile Include="d3d9_render_texture.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d11_renderer.h" />
     <ClInclude Include="d3d11_render_texture.h" />
+    <ClInclude Include="d3d11_rgb_to_yuv_converter.h" />
+    <ClInclude Include="d3d11_yuv_to_rgb_converter.h" />
     <ClInclude Include="d3d9_renderer.h" />
     <ClInclude Include="d3d9_render_texture.h" />
     <ClInclude Include="log.h" />

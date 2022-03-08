@@ -15,11 +15,10 @@ struct RGBParams
 	float align1_;
 };
 
-D3D11RGBToYUVConverter::D3D11RGBToYUVConverter(IDXGISwapChain* swap_chain)
-	: swap_chain_(swap_chain)
+D3D11RGBToYUVConverter::D3D11RGBToYUVConverter(ID3D11Device* d3d11_device)
+	: d3d11_device_(d3d11_device)
 {
-	swap_chain_->AddRef();
-	swap_chain_->GetDevice(__uuidof(ID3D11Device), (void**)&d3d11_device_);
+	d3d11_device_->AddRef();
 	d3d11_device_->GetImmediateContext(&d3d11_context_);
 }
 
@@ -27,7 +26,6 @@ D3D11RGBToYUVConverter::~D3D11RGBToYUVConverter()
 {
 	d3d11_context_->Release();
 	d3d11_device_->Release();
-	swap_chain_->Release();
 }
 
 bool D3D11RGBToYUVConverter::Init(int width, int height)
@@ -72,8 +70,8 @@ void D3D11RGBToYUVConverter::Destroy()
 
 bool D3D11RGBToYUVConverter::CreateTexture(int width, int height)
 {
-	yuv420_texture_.reset(new D3D11RenderTexture(swap_chain_));
-	chroma420_texture_.reset(new D3D11RenderTexture(swap_chain_));
+	yuv420_texture_.reset(new D3D11RenderTexture(d3d11_device_));
+	chroma420_texture_.reset(new D3D11RenderTexture(d3d11_device_));
 
 	D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
 	DXGI_FORMAT format = DXGI_FORMAT_NV12;

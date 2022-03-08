@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31410.357
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "video-renderer", "src\video-renderer\video-renderer.vcxproj", "{91822955-88BF-48CC-BF11-C52864ED4F63}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ffmpeg-d3d11va-win32", "src\ffmpeg-d3d11va\ffmpeg-d3d11va.vcxproj", "{B44B0768-11E0-42A6-AAC3-ED466F607D4C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ffmpeg-dxva2-win32", "src\ffmpeg-dxva2\ffmpeg-dxva2.vcxproj", "{F17BCF20-3F2D-4E93-8221-74FE96493909}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qsv_codec", "src\qsv_codec\qsv_codec.vcxproj", "{D8D201D9-CD6F-4373-B601-BB8C25F3E598}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,14 @@ Global
 		{F17BCF20-3F2D-4E93-8221-74FE96493909}.Release|x64.ActiveCfg = Release|Win32
 		{F17BCF20-3F2D-4E93-8221-74FE96493909}.Release|x86.ActiveCfg = Release|Win32
 		{F17BCF20-3F2D-4E93-8221-74FE96493909}.Release|x86.Build.0 = Release|Win32
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Debug|x64.ActiveCfg = Debug|x64
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Debug|x64.Build.0 = Debug|x64
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Debug|x86.ActiveCfg = Debug|Win32
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Debug|x86.Build.0 = Debug|Win32
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Release|x64.ActiveCfg = Release|x64
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Release|x64.Build.0 = Release|x64
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Release|x86.ActiveCfg = Release|Win32
+		{D8D201D9-CD6F-4373-B601-BB8C25F3E598}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

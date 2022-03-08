@@ -32,6 +32,12 @@
     <ClCompile Include="d3d11_render_texture.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="d3d11_rgb_to_yuv_converter.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11_yuv_to_rgb_converter.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d9_renderer.h">
@@ -87,6 +93,12 @@
     </ClInclude>
     <ClInclude Include="shader\d3d11\shader_d3d11_yuv_to_rgb.h">
       <Filter>源文件\shader\d3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11_rgb_to_yuv_converter.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11_yuv_to_rgb_converter.h">
+      <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

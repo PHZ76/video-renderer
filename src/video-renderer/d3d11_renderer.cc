@@ -196,7 +196,7 @@ bool D3D11Renderer::InitDevice()
 
 	D3D_FEATURE_LEVEL feature_levels[] =
 	{
-		//D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_1,
 		D3D_FEATURE_LEVEL_10_0,
@@ -297,11 +297,15 @@ bool D3D11Renderer::CreateRenderer()
 	}
 
 	for (int i = 0; i < PIXEL_SHADER_MAX; i++) {
-		render_targets_[i].reset(new D3D11RenderTexture(dxgi_swap_chain_));
+		render_targets_[i].reset(new D3D11RenderTexture(d3d11_device_));
 	}
 
 	ID3D11Texture2D* back_buffer = NULL;
 	HRESULT hr = dxgi_swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&back_buffer));
+	if (FAILED(hr)) {
+		LOG("IDXGISwapChain::GetBuffer() failed, %x ", hr);
+		return false;
+	}
 
 	D3D11_TEXTURE2D_DESC desc;
 	back_buffer->GetDesc(&desc);
@@ -389,7 +393,7 @@ bool D3D11Renderer::CreateTexture(int width, int height, PixelFormat format)
 	}
 
 	for (int i = 0; i < PIXEL_PLANE_MAX; i++) {
-		input_textures_[i].reset(new D3D11RenderTexture(dxgi_swap_chain_));
+		input_textures_[i].reset(new D3D11RenderTexture(d3d11_device_));
 	}
 
 	D3D11_USAGE usage = D3D11_USAGE_DYNAMIC;

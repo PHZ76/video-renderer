@@ -5,13 +5,11 @@
 
 #include "screen_capture.h"
 #include "window_helper.h"
-#include <cstdio>
 #include <cstdint>
 #include <string>
 #include <mutex>
 #include <thread>
 #include <memory>
-#include <vector>
 #include <wrl.h>
 #include <dxgi.h>
 #include <d3d11_1.h>

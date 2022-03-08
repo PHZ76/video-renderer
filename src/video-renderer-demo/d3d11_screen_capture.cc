@@ -31,13 +31,13 @@ bool D3D11ScreenCapture::Init(int display_index)
 	}
 
 	is_started_ = true;
+	AcquireFrame();
 	capture_thread_.reset(new std::thread([this] {
-		AcquireFrame();
 		while (is_started_) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			AcquireFrame();
 		}
-		}));
+	}));
 
 	return true;
 

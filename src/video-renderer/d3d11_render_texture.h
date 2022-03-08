@@ -12,7 +12,7 @@ namespace xop {
 class D3D11RenderTexture
 {
 public:
-	D3D11RenderTexture(IDXGISwapChain* swap_chain);
+	D3D11RenderTexture(ID3D11Device* d3d11_device);
 	virtual ~D3D11RenderTexture();
 
 	bool InitTexture(UINT width, UINT height, DXGI_FORMAT format, D3D11_USAGE usage, UINT bind_flags, UINT cpu_flags, UINT misc_flags);
@@ -41,7 +41,6 @@ public:
 
 private:
 	ID3D11Device*               d3d11_device_     = NULL;
-	IDXGISwapChain*             dxgi_swap_chain_  = NULL;
 	ID3D11DeviceContext*        d3d11_context_    = NULL;
 
 	ID3D11Texture2D*            texture_          = NULL;

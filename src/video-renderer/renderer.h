@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <memory>
 
-namespace xop {
+namespace DX {
 
 enum PixelFormat
 {

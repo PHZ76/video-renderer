@@ -5,7 +5,7 @@
 
 #include <mutex>
 
-namespace xop {
+namespace DX {
 
 class D3D9Renderer : public Renderer
 {

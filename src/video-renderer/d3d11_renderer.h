@@ -4,7 +4,7 @@
 #include "d3d11_render_texture.h"
 #include <mutex>
 
-namespace xop {
+namespace DX {
 
 class D3D11Renderer : public Renderer
 {

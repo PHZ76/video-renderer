@@ -19,22 +19,22 @@ static void GetWindowSize(HWND hwnd, int& width, int& height)
 	height = static_cast<int>(rect.bottom - rect.top);
 }
 
-static void RenderARGB(xop::Renderer* renderer, DX::Image argb_image)
+static void RenderARGB(DX::Renderer* renderer, DX::Image argb_image)
 {
-	xop::PixelFrame pixel_frame;
+	DX::PixelFrame pixel_frame;
 
 	pixel_frame.width = argb_image.width;
 	pixel_frame.height = argb_image.height;
-	pixel_frame.format = xop::PIXEL_FORMAT_ARGB;
+	pixel_frame.format = DX::PIXEL_FORMAT_ARGB;
 	pixel_frame.pitch[0] = argb_image.width * 4;
 	pixel_frame.plane[0] = &argb_image.bgra[0];
 
 	renderer->Render(&pixel_frame);
 }
 
-static void RenderI444(xop::Renderer* renderer, DX::Image argb_image)
+static void RenderI444(DX::Renderer* renderer, DX::Image argb_image)
 {
-	xop::PixelFrame pixel_frame;
+	DX::PixelFrame pixel_frame;
 
 	int dst_stride_y = argb_image.width;
 	int dst_stride_u = argb_image.width;
@@ -58,7 +58,7 @@ static void RenderI444(xop::Renderer* renderer, DX::Image argb_image)
 
 	pixel_frame.width = argb_image.width;
 	pixel_frame.height = argb_image.height;
-	pixel_frame.format = xop::PIXEL_FORMAT_I444;
+	pixel_frame.format = DX::PIXEL_FORMAT_I444;
 	pixel_frame.pitch[0] = dst_stride_y;
 	pixel_frame.pitch[1] = dst_stride_u;
 	pixel_frame.pitch[2] = dst_stride_v;
@@ -69,9 +69,9 @@ static void RenderI444(xop::Renderer* renderer, DX::Image argb_image)
 	renderer->Render(&pixel_frame);
 }
 
-static void RenderI420(xop::Renderer* renderer, DX::Image argb_image)
+static void RenderI420(DX::Renderer* renderer, DX::Image argb_image)
 {
-	xop::PixelFrame pixel_frame;
+	DX::PixelFrame pixel_frame;
 
 	int dst_stride_y = argb_image.width;
 	int dst_stride_u = (argb_image.width + 1) / 2;
@@ -95,7 +95,7 @@ static void RenderI420(xop::Renderer* renderer, DX::Image argb_image)
 
 	pixel_frame.width = argb_image.width;
 	pixel_frame.height = argb_image.height;
-	pixel_frame.format = xop::PIXEL_FORMAT_I420;
+	pixel_frame.format = DX::PIXEL_FORMAT_I420;
 	pixel_frame.pitch[0] = dst_stride_y;
 	pixel_frame.pitch[1] = dst_stride_u;
 	pixel_frame.pitch[2] = dst_stride_v;
@@ -106,9 +106,9 @@ static void RenderI420(xop::Renderer* renderer, DX::Image argb_image)
 	renderer->Render(&pixel_frame);
 }
 
-static void RenderNV12(xop::Renderer* renderer, DX::Image argb_image)
+static void RenderNV12(DX::Renderer* renderer, DX::Image argb_image)
 {
-	xop::PixelFrame pixel_frame;
+	DX::PixelFrame pixel_frame;
 
 	int dst_stride_y  = argb_image.width;
 	int dst_stride_uv = argb_image.width;
@@ -129,7 +129,7 @@ static void RenderNV12(xop::Renderer* renderer, DX::Image argb_image)
 	
 	pixel_frame.width    = argb_image.width;
 	pixel_frame.height   = argb_image.height;
-	pixel_frame.format   = xop::PIXEL_FORMAT_NV12;
+	pixel_frame.format   = DX::PIXEL_FORMAT_NV12;
 	pixel_frame.pitch[0] = dst_stride_y;
 	pixel_frame.pitch[1] = dst_stride_uv;
 	pixel_frame.plane[0] = dst_y.get();
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 		return -2;
 	}
 
-	xop::D3D11Renderer renderer;
+	DX::D3D11Renderer renderer;
 	if (!renderer.Init(window.GetHandle())) {
 		return -3;
 	}
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 	MSG msg;
 	ZeroMemory(&msg, sizeof(msg));
 
-	xop::PixelFormat render_format = xop::PIXEL_FORMAT_I420;
+	DX::PixelFormat render_format = DX::PIXEL_FORMAT_I420;
 
 	while (msg.message != WM_QUIT) {
 		if (::PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
@@ -182,16 +182,16 @@ int main(int argc, char** argv)
 
 			DX::Image argb_image;
 			if (screen_capture.Capture(argb_image)) {
-				if (render_format == xop::PIXEL_FORMAT_ARGB) {
+				if (render_format == DX::PIXEL_FORMAT_ARGB) {
 					RenderARGB(&renderer, argb_image);
 				}
-				else if (render_format == xop::PIXEL_FORMAT_I444) {
+				else if (render_format == DX::PIXEL_FORMAT_I444) {
 					RenderI444(&renderer, argb_image);
 				}
-				else if (render_format == xop::PIXEL_FORMAT_I420) {
+				else if (render_format == DX::PIXEL_FORMAT_I420) {
 					RenderI420(&renderer, argb_image);
 				}
-				else if (render_format == xop::PIXEL_FORMAT_NV12) {
+				else if (render_format == DX::PIXEL_FORMAT_NV12) {
 					RenderNV12(&renderer, argb_image);
 				}
 			}

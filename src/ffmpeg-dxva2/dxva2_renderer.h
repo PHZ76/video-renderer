@@ -4,7 +4,7 @@ extern "C" {
 #include "libavformat/avformat.h"
 }
 
-class DXVA2Renderer : public xop::D3D9Renderer
+class DXVA2Renderer : public DX::D3D9Renderer
 {
 public:
 	DXVA2Renderer();

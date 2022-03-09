@@ -7,7 +7,7 @@
 #include <memory>
 #include <cstdio>
 
-namespace xop {
+namespace DX {
 
 class D3D9RenderTexture
 {

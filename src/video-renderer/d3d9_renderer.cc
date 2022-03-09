@@ -5,7 +5,7 @@
 #include "shader/d3d9/shader_d3d9_yuv_bt709.h"
 #include "shader/d3d9/shader_d3d9_sharpness.h"
 
-using namespace xop;
+using namespace DX;
 
 #define DX_SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } } 
 

@@ -4,7 +4,7 @@ extern "C" {
 #include "libavformat/avformat.h"
 }
 
-class D3D11VARenderer : public xop::D3D11Renderer
+class D3D11VARenderer : public DX::D3D11Renderer
 {
 public:
 	D3D11VARenderer();

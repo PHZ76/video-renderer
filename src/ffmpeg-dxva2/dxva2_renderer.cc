@@ -21,16 +21,16 @@ void DXVA2Renderer::RenderFrame(AVFrame* frame)
 	D3DSURFACE_DESC desc;
 	surface->GetDesc(&desc);
 
-	if (pixel_format_ != xop::PIXEL_FORMAT_NV12 ||
+	if (pixel_format_ != DX::PIXEL_FORMAT_NV12 ||
 		width_ != desc.Width ||height_ != desc.Height) {
-		if (!CreateTexture(desc.Width, desc.Height, xop::PIXEL_FORMAT_NV12)) {
+		if (!CreateTexture(desc.Width, desc.Height, DX::PIXEL_FORMAT_NV12)) {
 			return;
 		}
 	}
 
 	Begin();
 
-	output_texture_ = input_texture_[xop::PIXEL_PLANE_ARGB].get();
+	output_texture_ = input_texture_[DX::PIXEL_PLANE_ARGB].get();
 	d3d9_device_->StretchRect(surface, NULL, output_texture_->GetSurface(), NULL, D3DTEXF_LINEAR);
 
 	Process();

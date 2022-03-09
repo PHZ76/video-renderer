@@ -5,7 +5,7 @@
 
 #define DX_SAFE_RELEASE(p) { if(p) { (p)->Release(); (p) = NULL; } } 
 
-using namespace xop;
+using namespace DX;
 using namespace DirectX;
 
 struct VertexShaderConstants

@@ -7,7 +7,7 @@
 #include <directxmath.h>
 #include <directxcolors.h>
 
-namespace xop {
+namespace DX {
 
 class D3D11RenderTexture
 {

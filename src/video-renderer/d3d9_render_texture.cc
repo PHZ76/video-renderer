@@ -2,7 +2,7 @@
 #include "log.h"
 #include <string>
 
-using namespace xop;
+using namespace DX;
 
 #define DX_SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } } 
 

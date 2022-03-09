@@ -2,59 +2,88 @@
 #include "d3d11_qsv_encoder.h"
 #include "d3d11_screen_capture.h"
 #include "d3d11_rgb_to_yuv_converter.h"
+#include "d3d11_yuv_to_rgb_converter.h"
 #include <cstdio>
 
 int main(int argc, char** argv)
 {
 	DX::D3D11ScreenCapture screen_capture;
-	if (screen_capture.Init()) {
-		printf("init capture succeeded !!! \n");
+	if (!screen_capture.Init()) {
+		printf("init screen capture failed. \n");
+		return -1;
 	}
 
-	DX::Image argb_image;
-	screen_capture.Capture(argb_image);
+	DX::Image image;
+	screen_capture.Capture(image);
 
 	D3D11QSVDevice device;
-	if (device.Init()) {
-		printf("init device succeeded !!! \n");
+	if (!device.Init()) {
+		printf("init qsv device failed. \n");
+		return -2;
 	}
 
 	ID3D11Device* d3d11_device = device.GetD3D11Device();
-	xop::D3D11RGBToYUVConverter rgb_to_yuv_converter(d3d11_device);
-	if (rgb_to_yuv_converter.Init(argb_image.width, argb_image.height)) {
-		printf("init device converter !!! \n");
-	}
 
 	D3D11QSVEncoder yuv420_encoder(d3d11_device);
-	yuv420_encoder.SetOption(QSV_OPTION_WIDTH, argb_image.width);
-	yuv420_encoder.SetOption(QSV_OPTION_HEIGHT, argb_image.height);
-	if (yuv420_encoder.Init()) {
-		printf("init encoder succeeded !!! \n");
+	yuv420_encoder.SetOption(QSV_OPTION_WIDTH, image.width);
+	yuv420_encoder.SetOption(QSV_OPTION_HEIGHT, image.height);
+	if (!yuv420_encoder.Init()) {
+		printf("init yuv420 encoder failed. \n");
+		return -3;
 	}
 
 	D3D11QSVEncoder chromat420_encoder(d3d11_device);
-	chromat420_encoder.SetOption(QSV_OPTION_WIDTH, argb_image.width);
-	chromat420_encoder.SetOption(QSV_OPTION_HEIGHT, argb_image.height);
-	if (chromat420_encoder.Init()) {
-		printf("init encoder succeeded !!! \n");
+	chromat420_encoder.SetOption(QSV_OPTION_WIDTH, image.width);
+	chromat420_encoder.SetOption(QSV_OPTION_HEIGHT, image.height);
+	if (!chromat420_encoder.Init()) {
+		printf("init chroma encoder failed. \n");
+		return -4;
+	}
+
+	DX::D3D11RGBToYUVConverter rgb_to_yuv_converter(d3d11_device);
+	if (!rgb_to_yuv_converter.Init(image.width, image.height)) {
+		printf("init rgb_to_yuv converter failed. \n");
+		return -5;
+	}
+
+	DX::D3D11YUVToRGBConverter yuv_to_rgb_converter(d3d11_device);
+	if (!rgb_to_yuv_converter.Init(image.width, image.height)) {
+		printf("init yuv_to_rgb converter failed. \n");
+		return -6;
 	}
 
 	while (1) {
 		std::vector<uint8_t> yuv_frame;
 		std::vector<uint8_t> chroma_frame;
+		int frame_size = 0;
 
-		if (screen_capture.Capture(argb_image)) {
+		if (screen_capture.Capture(image)) {
 			ID3D11Texture2D* argb_texture = NULL;
-
-			HRESULT hr = d3d11_device->OpenSharedResource(argb_image.shared_handle,__uuidof(ID3D11Texture2D), (void**)(&argb_texture));
+			HRESULT hr = d3d11_device->OpenSharedResource(image.shared_handle,__uuidof(ID3D11Texture2D), (void**)(&argb_texture));
 			if (FAILED(hr)) {
 				break;
 			}
-
-			rgb_to_yuv_converter.Convert(argb_texture);
-			yuv420_encoder.Encode(rgb_to_yuv_converter.GetYUV420Texture(), yuv_frame);
-			chromat420_encoder.Encode(rgb_to_yuv_converter.GetChroma420Texture(), chroma_frame);
+			
+			if (!rgb_to_yuv_converter.Convert(argb_texture)) {
+				printf("convert rgb to yuv failed. \n");
+				argb_texture->Release();
+				break;
+			}
+			
 			argb_texture->Release();
+
+			ID3D11Texture2D* yuv420_texture = rgb_to_yuv_converter.GetYUV420Texture();
+			frame_size = yuv420_encoder.Encode(yuv420_texture, yuv_frame);
+			if (frame_size < 0) {
+				printf("yuv420_encoder encode failed. \n");
+				break;
+			}
+
+			frame_size = chromat420_encoder.Encode(rgb_to_yuv_converter.GetChroma420Texture(), chroma_frame);
+			if (frame_size < 0) {
+				printf("chromat420_encoder encode failed. \n");
+				break;
+			}
 		}
 		Sleep(100);
 	}

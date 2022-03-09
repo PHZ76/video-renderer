@@ -3,7 +3,7 @@
 #include "d3d11_render_texture.h"
 #include <memory>
 
-namespace xop {
+namespace DX {
 
 class D3D11RGBToYUVConverter
 {

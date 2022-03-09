@@ -24,18 +24,18 @@ void D3D11VARenderer::RenderFrame(AVFrame* frame)
 	D3D11_TEXTURE2D_DESC desc;
 	texture->GetDesc(&desc);
 
-	if (pixel_format_ != xop::PIXEL_FORMAT_NV12 ||
+	if (pixel_format_ != DX::PIXEL_FORMAT_NV12 ||
 		width_ != desc.Width || height_ != desc.Height) {
-		if (!CreateTexture(desc.Width, desc.Height, xop::PIXEL_FORMAT_NV12)) {
+		if (!CreateTexture(desc.Width, desc.Height, DX::PIXEL_FORMAT_NV12)) {
 			return;
 		}
 	}
 
 	Begin();
 
-	ID3D11Texture2D* nv12_texture = input_textures_[xop::PIXEL_PLANE_NV12]->GetTexture();
-	ID3D11ShaderResourceView* nv12_texture_y_srv = input_textures_[xop::PIXEL_PLANE_NV12]->GetNV12YShaderResourceView();
-	ID3D11ShaderResourceView* nv12_texture_uv_srv = input_textures_[xop::PIXEL_PLANE_NV12]->GetNV12UVShaderResourceView();
+	ID3D11Texture2D* nv12_texture = input_textures_[DX::PIXEL_PLANE_NV12]->GetTexture();
+	ID3D11ShaderResourceView* nv12_texture_y_srv = input_textures_[DX::PIXEL_PLANE_NV12]->GetNV12YShaderResourceView();
+	ID3D11ShaderResourceView* nv12_texture_uv_srv = input_textures_[DX::PIXEL_PLANE_NV12]->GetNV12UVShaderResourceView();
 
 	d3d11_context_->CopySubresourceRegion(
 		nv12_texture,
@@ -47,7 +47,7 @@ void D3D11VARenderer::RenderFrame(AVFrame* frame)
 		index,
 		NULL);
 
-	xop::D3D11RenderTexture* render_target = render_targets_[xop::PIXEL_SHADER_NV12_BT601].get();
+	DX::D3D11RenderTexture* render_target = render_targets_[DX::PIXEL_SHADER_NV12_BT601].get();
 	if (render_target) {
 		render_target->Begin();
 		render_target->PSSetTexture(0, nv12_texture_y_srv);

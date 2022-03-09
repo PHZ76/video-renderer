@@ -4,7 +4,7 @@
 #include "log.h"
 #include <wrl/client.h>
 
-using namespace xop;
+using namespace DX;
 
 struct YUVParams
 {

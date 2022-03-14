@@ -4,18 +4,18 @@
 #include <cstdint>
 #include <memory>
 
-enum QSVOption
+enum QSVEncoderOption
 {
-	QSV_OPTION_UNKNOW,
+	QSV_ENCODER_OPTION_UNKNOW,
 
-	QSV_OPTION_WIDTH,
-	QSV_OPTION_HEIGHT,
-	QSV_OPTION_CODEC,
-	QSV_OPTION_BITRATE_KBPS,
-	QSV_OPTION_FRAME_RATE,
-	QSV_OPTION_GOP,
+	QSV_ENCODER_OPTION_WIDTH,
+	QSV_ENCODER_OPTION_HEIGHT,
+	QSV_ENCODER_OPTION_CODEC,
+	QSV_ENCODER_OPTION_BITRATE_KBPS,
+	QSV_ENCODER_OPTION_FRAME_RATE,
+	QSV_ENCODER_OPTION_GOP,
 
-	QSV_OPTION_FORCE_IDR,
+	QSV_ENCODER_OPTION_FORCE_IDR,
 };
 
 class QSVEncoder
@@ -50,30 +50,30 @@ public:
 		return sts == MFX_ERR_NONE;
 	}
 
-	void SetOption(QSVOption optopn, int value) 
+	void SetOption(QSVEncoderOption optopn, int value)
 	{
 		switch (optopn)
 		{
-		case QSV_OPTION_WIDTH:
+		case QSV_ENCODER_OPTION_WIDTH:
 			enc_width_ = value;
 			break;
-		case QSV_OPTION_HEIGHT:
+		case QSV_ENCODER_OPTION_HEIGHT:
 			enc_height_ = value;
 			break;
-		case QSV_OPTION_CODEC:
+		case QSV_ENCODER_OPTION_CODEC:
 			enc_type_ = value;
 			break;
-		case QSV_OPTION_BITRATE_KBPS:
+		case QSV_ENCODER_OPTION_BITRATE_KBPS:
 			enc_bitrate_kbps_ = value;
 			break;
-		case QSV_OPTION_FRAME_RATE:
+		case QSV_ENCODER_OPTION_FRAME_RATE:
 			enc_framerate_ = value;
 			break;
-		case QSV_OPTION_GOP:
+		case QSV_ENCODER_OPTION_GOP:
 			enc_gop_ = value;
 			break;
 
-		case QSV_OPTION_FORCE_IDR:
+		case QSV_ENCODER_OPTION_FORCE_IDR:
 			force_idr_ += 1;
 			break;
 

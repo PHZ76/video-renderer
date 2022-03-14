@@ -36,6 +36,18 @@
     <ClCompile Include="window_helper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="video_sink.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="video_source.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11va_decoder.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main_window.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common_directx11.h">
@@ -57,6 +69,21 @@
       <Filter>源文件</Filter>
     </ClInclude>
     <ClInclude Include="window_helper.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="video_sink.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="video_source.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11va_decoder.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="av_decoder.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="main_window.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -97,8 +97,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\3rdpart\msdk_2021_r1\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libmfx_vs2015.lib;d3d11.lib;dxgi.lib;d3d9.lib;dxva2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\3rdpart\msdk_2021_r1\lib\x86;$(ProjectDir)..\..\3rdpart\ffmpeg\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>avformat.lib;avcodec.lib;avutil.lib;d3dcompiler.lib;libmfx_vs2015.lib;d3d11.lib;dxgi.lib;d3d9.lib;dxva2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -116,8 +116,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\3rdpart\msdk_2021_r1\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libmfx_vs2015.lib;d3d11.lib;dxgi.lib;d3d9.lib;dxva2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\3rdpart\msdk_2021_r1\lib\x86;$(ProjectDir)..\..\3rdpart\ffmpeg\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>avformat.lib;avcodec.lib;avutil.lib;d3dcompiler.lib;libmfx_vs2015.lib;d3d11.lib;dxgi.lib;d3d9.lib;dxva2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -151,19 +151,28 @@
   <ItemGroup>
     <ClCompile Include="common_directx11.cpp" />
     <ClCompile Include="common_utils.cpp" />
+    <ClCompile Include="d3d11va_decoder.cpp" />
     <ClCompile Include="d3d11_qsv_device.cpp" />
     <ClCompile Include="d3d11_screen_capture.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="d3d11_qsv_encoder.cpp" />
+    <ClCompile Include="main_window.cpp" />
+    <ClCompile Include="video_sink.cpp" />
+    <ClCompile Include="video_source.cpp" />
     <ClCompile Include="window_helper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="av_decoder.h" />
     <ClInclude Include="common_directx11.h" />
     <ClInclude Include="common_utils.h" />
+    <ClInclude Include="d3d11va_decoder.h" />
     <ClInclude Include="d3d11_qsv_device.h" />
     <ClInclude Include="d3d11_qsv_encoder.h" />
     <ClInclude Include="d3d11_screen_capture.h" />
+    <ClInclude Include="main_window.h" />
     <ClInclude Include="qsv_encoder.h" />
+    <ClInclude Include="video_sink.h" />
+    <ClInclude Include="video_source.h" />
     <ClInclude Include="window_helper.h" />
   </ItemGroup>
   <ItemGroup>

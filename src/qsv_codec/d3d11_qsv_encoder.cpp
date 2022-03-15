@@ -338,7 +338,7 @@ int D3D11QSVEncoder::EncodeFrame(int index, std::vector<uint8_t>& out_frame)
 		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
 		if (mfx_enc_bs_.DataLength > 0) {
-			printf("encoder output frame: %u \n", mfx_enc_bs_.DataLength);
+			//printf("encoder output frame: %u \n", mfx_enc_bs_.DataLength);
 			out_frame.clear();
 			out_frame.resize(mfx_enc_bs_.DataLength);
 			memcpy(out_frame.data(), mfx_enc_bs_.Data, mfx_enc_bs_.DataLength);

@@ -60,7 +60,8 @@ bool D3D11QSVEncoder::InitEncoder()
 	memset(&mfx_enc_params_, 0, sizeof(mfx_enc_params_));
 
 	mfx_enc_params_.mfx.CodecId = MFX_CODEC_AVC;
-	mfx_enc_params_.mfx.CodecProfile = MFX_PROFILE_AVC_BASELINE;
+	mfx_enc_params_.mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
+	mfx_enc_params_.mfx.CodecLevel = MFX_LEVEL_AVC_41;
 	if (enc_type_ == 265) {
 		mfx_enc_params_.mfx.CodecId = MFX_CODEC_HEVC;
 		mfx_enc_params_.mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN;
@@ -103,7 +104,11 @@ bool D3D11QSVEncoder::InitEncoder()
 	memset(&extended_coding_options_, 0, sizeof(mfxExtCodingOption));
 	extended_coding_options_.Header.BufferId = MFX_EXTBUFF_CODING_OPTION;
 	extended_coding_options_.Header.BufferSz = sizeof(mfxExtCodingOption);
-	//option.RefPicMarkRep = MFX_CODINGOPTION_ON;
+
+	//extended_coding_options_.RefPicMarkRep = MFX_CODINGOPTION_ON;
+	//extended_coding_options_.VuiNalHrdParameters = MFX_CODINGOPTION_OFF;
+	//extended_coding_options_.VuiVclHrdParameters = MFX_CODINGOPTION_OFF;
+
 	extended_coding_options_.NalHrdConformance = MFX_CODINGOPTION_OFF;
 	extended_coding_options_.PicTimingSEI = MFX_CODINGOPTION_OFF;
 	extended_coding_options_.AUDelimiter = MFX_CODINGOPTION_OFF;
@@ -333,7 +338,7 @@ int D3D11QSVEncoder::EncodeFrame(int index, std::vector<uint8_t>& out_frame)
 		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
 		if (mfx_enc_bs_.DataLength > 0) {
-			//printf("encoder output frame: %u \n", mfx_enc_bs_.DataLength);
+			printf("encoder output frame: %u \n", mfx_enc_bs_.DataLength);
 			out_frame.clear();
 			out_frame.resize(mfx_enc_bs_.DataLength);
 			memcpy(out_frame.data(), mfx_enc_bs_.Data, mfx_enc_bs_.DataLength);

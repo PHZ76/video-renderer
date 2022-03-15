@@ -19,6 +19,9 @@ public:
 	bool Capture(DX::Image& image);
 	bool Capture(std::vector<std::vector<uint8_t>>& compressed_frame);
 
+	int GetWidth();
+	int GetHeight();
+
 private:
 	std::shared_ptr<DX::ScreenCapture> screen_capture_;
 
@@ -27,4 +30,7 @@ private:
 	std::shared_ptr<D3D11QSVDevice>  qsv_device_;
 	std::shared_ptr<D3D11QSVEncoder> yuv420_encoder_;
 	std::shared_ptr<D3D11QSVEncoder> chroma420_encoder_;
+
+	int video_width_ = 0;
+	int video_height_ = 0;
 };

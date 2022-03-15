@@ -5,6 +5,7 @@ extern "C" {
 #include "libavutil/hwcontext_d3d11va.h"
 }
 
+#if 1
 static enum AVPixelFormat get_d3d11va_hw_format(AVCodecContext* avctx, const enum AVPixelFormat* pix_fmts)
 {
 	while (*pix_fmts != AV_PIX_FMT_NONE) {
@@ -48,10 +49,48 @@ static enum AVPixelFormat get_d3d11va_hw_format(AVCodecContext* avctx, const enu
 	return AV_PIX_FMT_NONE;
 }
 
+#else
+static AVPixelFormat get_d3d11va_hw_format(AVCodecContext* avctx, const enum AVPixelFormat* pix_fmts)
+{
+	while (*pix_fmts != AV_PIX_FMT_NONE) {
+		if (*pix_fmts == AV_PIX_FMT_D3D11) {
+
+			int ret;
+			AVBufferRef* hw_device_ctx = avctx->hw_device_ctx;
+			AVHWDeviceContext* pAVHWDeviceContext = (AVHWDeviceContext*)hw_device_ctx->data;
+			AVBufferRef* hw_frame_ctx = av_hwframe_ctx_alloc(hw_device_ctx);
+			avctx->hw_frames_ctx = av_buffer_ref(hw_frame_ctx);
+			AVHWFramesContext* frames_ctx = (AVHWFramesContext*)hw_frame_ctx->data;
+			AVD3D11VAFramesContext* device_hwctx = (AVD3D11VAFramesContext*)frames_ctx->hwctx;
+			device_hwctx->BindFlags = D3D11_BIND_DECODER | D3D11_BIND_SHADER_RESOURCE;
+			frames_ctx->format = AV_PIX_FMT_D3D11;
+			frames_ctx->sw_format = AV_PIX_FMT_NV12;
+			frames_ctx->width = 1920;
+			frames_ctx->height = 1080;
+			frames_ctx->initial_pool_size = 20;
+			if ((ret = av_hwframe_ctx_init(hw_frame_ctx)) < 0) {
+				printf("Failed to init HW frame context.\n");
+				return AV_PIX_FMT_NONE;
+			}
+			return AV_PIX_FMT_D3D11;
+		}
+
+		pix_fmts++;
+	}
+
+	fprintf(stderr, "The QSV pixel format not offered in get_format()\n");
+
+	return AV_PIX_FMT_NONE;
+}
+
+#endif
+
 D3D11VADecoder::D3D11VADecoder(ID3D11Device* d3d11_device)
 	: d3d11_device_(d3d11_device)
 {
 	av_packet_ = av_packet_alloc();
+	av_init_packet(av_packet_);
+	av_log_set_level(AV_LOG_DEBUG);
 }
 
 D3D11VADecoder::~D3D11VADecoder()
@@ -87,7 +126,6 @@ bool D3D11VADecoder::Init()
 	codec_context_->flags2 |= AV_CODEC_FLAG2_SHOW_ALL;
 
 	codec_context_->err_recognition = AV_EF_EXPLODE;
-	codec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
 	codec_context_->width = dec_width_;
 	codec_context_->height = dec_height_;
 
@@ -103,7 +141,7 @@ bool D3D11VADecoder::Init()
 			break;
 		}
 	}
-
+#if 1
 	if (d3d11_device_) {
 		device_buffer_ = av_hwdevice_ctx_alloc(hw_type);
 		device_context = (AVHWDeviceContext*)device_buffer_->data;
@@ -116,9 +154,12 @@ bool D3D11VADecoder::Init()
 		codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
 		codec_context_->opaque = device_buffer_;
 	}
-	else {
+	else
+#endif
+	{
 		 av_hwdevice_ctx_create(&device_buffer_, hw_type, NULL, NULL, 0);
 		 codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
+		 codec_context_->opaque = device_buffer_;
 	}
 
 	codec_context_->get_format = get_d3d11va_hw_format;
@@ -162,7 +203,7 @@ int D3D11VADecoder::Send(std::vector<uint8_t>& frame)
 		return -1;
 	}
 
-	av_packet_->data = &frame[0];
+	av_packet_->data = frame.data();
 	av_packet_->size = frame.size();
 	int ret = avcodec_send_packet(codec_context_, av_packet_);
 	return ret;

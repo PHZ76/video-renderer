@@ -171,6 +171,7 @@
     <ClInclude Include="d3d11_screen_capture.h" />
     <ClInclude Include="main_window.h" />
     <ClInclude Include="qsv_encoder.h" />
+    <ClInclude Include="screen_capture.h" />
     <ClInclude Include="video_sink.h" />
     <ClInclude Include="video_source.h" />
     <ClInclude Include="window_helper.h" />

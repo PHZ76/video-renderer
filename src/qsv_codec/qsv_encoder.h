@@ -94,7 +94,7 @@ protected:
 	int enc_framerate_     = 30;
 	int enc_gop_           = 300;
 
-	int force_idr_             = 0;
+	int force_idr_         = 0;
 
 	std::unique_ptr<mfxU8> sps_buffer_;
 	std::unique_ptr<mfxU8> pps_buffer_;

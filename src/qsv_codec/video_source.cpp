@@ -30,26 +30,28 @@ bool VideoSource::Init()
 		return false;
 	}
 
+	video_width_ = image.width;
+	video_height_ = image.height;
 	ID3D11Device* d3d11_device = qsv_device_->GetD3D11Device();
 
 	yuv420_encoder_ = std::make_shared<D3D11QSVEncoder>(d3d11_device);
-	yuv420_encoder_->SetOption(QSV_ENCODER_OPTION_WIDTH, image.width);
-	yuv420_encoder_->SetOption(QSV_ENCODER_OPTION_HEIGHT, image.height);
+	yuv420_encoder_->SetOption(QSV_ENCODER_OPTION_WIDTH, video_width_);
+	yuv420_encoder_->SetOption(QSV_ENCODER_OPTION_HEIGHT, video_height_);
 	if (!yuv420_encoder_->Init()) {
 		printf("Init yuv420 encoder failed. \n");
 		return false;
 	}
 
 	chroma420_encoder_ = std::make_shared<D3D11QSVEncoder>(d3d11_device);
-	chroma420_encoder_->SetOption(QSV_ENCODER_OPTION_WIDTH, image.width);
-	chroma420_encoder_->SetOption(QSV_ENCODER_OPTION_HEIGHT, image.height);
+	chroma420_encoder_->SetOption(QSV_ENCODER_OPTION_WIDTH, video_width_);
+	chroma420_encoder_->SetOption(QSV_ENCODER_OPTION_HEIGHT, video_height_);
 	if (!chroma420_encoder_->Init()) {
 		printf("Init chroma encoder failed. \n");
 		return false;
 	}
 
 	color_converter_ = std::make_shared<DX::D3D11RGBToYUVConverter>(d3d11_device);
-	if (!color_converter_->Init(image.width, image.height)) {
+	if (!color_converter_->Init(video_width_, video_height_)) {
 		printf("init color converter failed. \n");
 		return false;
 	}
@@ -135,4 +137,14 @@ bool VideoSource::Capture(std::vector<std::vector<uint8_t>>& compressed_frame)
 	compressed_frame.push_back(chroma420_frame);
 
 	return true;
+}
+
+int VideoSource::GetWidth()
+{
+	return video_width_;
+}
+
+int VideoSource::GetHeight()
+{
+	return video_height_;
 }

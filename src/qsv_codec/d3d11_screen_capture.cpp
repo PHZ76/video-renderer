@@ -34,7 +34,7 @@ bool D3D11ScreenCapture::Init(int display_index)
 	AcquireFrame();
 	capture_thread_.reset(new std::thread([this] {
 		while (is_started_) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(15));
 			AcquireFrame();
 		}
 		}));
@@ -135,8 +135,8 @@ void D3D11ScreenCapture::CleanupD3D11()
 bool D3D11ScreenCapture::CreateTexture()
 {
 	D3D11_TEXTURE2D_DESC desc = { 0 };
-	desc.Width = dxgi_desc_.ModeDesc.Width;
-	desc.Height = dxgi_desc_.ModeDesc.Height;
+	desc.Width = dxgi_desc_.ModeDesc.Width;// 1920;
+	desc.Height = dxgi_desc_.ModeDesc.Height;// 1080;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -152,6 +152,8 @@ bool D3D11ScreenCapture::CreateTexture()
 		return false;
 	}
 
+	desc.Width = dxgi_desc_.ModeDesc.Width;
+	desc.Height = dxgi_desc_.ModeDesc.Height;
 	desc.BindFlags = 0;
 	desc.Usage = D3D11_USAGE_STAGING;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
@@ -163,6 +165,8 @@ bool D3D11ScreenCapture::CreateTexture()
 		return false;
 	}
 
+	desc.Width = dxgi_desc_.ModeDesc.Width;
+	desc.Height = dxgi_desc_.ModeDesc.Height;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.CPUAccessFlags = 0;
 	desc.BindFlags = D3D11_BIND_RENDER_TARGET;
@@ -253,10 +257,10 @@ int D3D11ScreenCapture::AcquireFrame()
 			auto cursor_position = cursor_info.ptScreenPos;
 			auto cursor_size = cursor_info.cbSize;
 			HDC  hdc;
-			//surface1->GetDC(FALSE, &hdc);
-			//DrawIconEx(hdc, cursor_position.x - monitor_.left, cursor_position.y - monitor_.top,
-			//	cursor_info.hCursor, 0, 0, 0, 0, DI_NORMAL | DI_DEFAULTSIZE);
-			//surface1->ReleaseDC(nullptr);
+			surface1->GetDC(FALSE, &hdc);
+			DrawIconEx(hdc, cursor_position.x - monitor_.left, cursor_position.y - monitor_.top,
+				cursor_info.hCursor, 0, 0, 0, 0, DI_NORMAL | DI_DEFAULTSIZE);
+			surface1->ReleaseDC(nullptr);
 		}
 	}
 
@@ -271,7 +275,10 @@ void D3D11ScreenCapture::CaptureFrame()
 	std::lock_guard<std::mutex> locker(mutex_);
 
 	D3D11_MAPPED_SUBRESOURCE dsec = { 0 };
-
+	int image_width = (int)dxgi_desc_.ModeDesc.Width;
+	int image_height = (int)dxgi_desc_.ModeDesc.Height;
+	image_size_ = image_width * image_height * 4;
+#if 0
 	HRESULT hr = d3d11_context_->Map(rgba_texture_.Get(), 0, D3D11_MAP_READ, 0, &dsec);
 	if (!FAILED(hr)) {
 		if (dsec.pData != NULL) {
@@ -286,8 +293,18 @@ void D3D11ScreenCapture::CaptureFrame()
 		}
 		d3d11_context_->Unmap(rgba_texture_.Get(), 0);
 	}
-
+#endif
 	d3d11_context_->CopyResource(shared_texture_.Get(), gdi_texture_.Get());
+	//D3D11_BOX src_box = { 0, 0, 0, 1920, 1080, 1 };
+	//d3d11_context_->CopySubresourceRegion(
+	//	shared_texture_.Get(),
+	//	0,
+	//	0,
+	//	0,
+	//	0,
+	//	gdi_texture_.Get(),
+	//	0,
+	//	&src_box);
 }
 
 bool D3D11ScreenCapture::Capture(Image& image)
@@ -302,67 +319,17 @@ bool D3D11ScreenCapture::Capture(Image& image)
 		return false;
 	}
 
-	if (image.bgra.size() != image_size_) {
-		image.bgra.resize(image_size_);
-	}
+	//if (image.bgra.size() != image_size_) {
+	//	image.bgra.resize(image_size_);
+	//}
 
-	image.bgra.assign(image_.get(), image_.get() + image_size_);
-	image.width = dxgi_desc_.ModeDesc.Width;
-	image.height = dxgi_desc_.ModeDesc.Height;
+	//image.bgra.assign(image_.get(), image_.get() + image_size_);
+	image.width = dxgi_desc_.ModeDesc.Width;// 1920;
+	image.height = dxgi_desc_.ModeDesc.Height;// 1080;
 
 	if (shared_handle_) {
 		image.shared_handle = shared_handle_;
 	}
 
-	return true;
-}
-
-bool D3D11ScreenCapture::SaveToFile(std::string pathname)
-{
-	Image image;
-	if (!Capture(image)) {
-		return false;
-	}
-
-	std::ofstream fp_out(pathname.c_str(), std::ios::out | std::ios::binary);
-	if (!fp_out) {
-		printf("[D3D11ScreenCapture] capture image failed, open %s failed.\n", pathname.c_str());
-		return false;
-	}
-
-	unsigned char file_header[54] = {
-		0x42, 0x4d, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0,   /*file header*/
-		40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 32, 0,  /*info header*/
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0
-	};
-
-	uint32_t image_width = image.width;
-	uint32_t image_height = image.height;
-	uint32_t image_size = image_width * image_height * 4;
-	uint32_t file_size = sizeof(file_header) + image_size;
-
-	file_header[2] = (uint8_t)file_size;
-	file_header[3] = file_size >> 8;
-	file_header[4] = file_size >> 16;
-	file_header[5] = file_size >> 24;
-
-	file_header[18] = (uint8_t)image_width;
-	file_header[19] = image_width >> 8;
-	file_header[20] = image_width >> 16;
-	file_header[21] = image_width >> 24;
-
-	file_header[22] = (uint8_t)image_height;
-	file_header[23] = image_height >> 8;
-	file_header[24] = image_height >> 16;
-	file_header[25] = image_height >> 24;
-
-	fp_out.write((char*)file_header, 54);
-
-	char* image_data = (char*)(&image.bgra[0]);
-	for (int h = image_height - 1; h >= 0; h--) {
-		fp_out.write(image_data + h * image_width * 4, image_width * 4);
-	}
-
-	fp_out.close();
 	return true;
 }

@@ -27,9 +27,6 @@ public:
 
 	virtual bool Capture(Image& image);
 
-	// save bmp faile
-	bool SaveToFile(std::string pathname);
-
 private:
 	bool InitD3D11();
 	void CleanupD3D11();
@@ -44,7 +41,7 @@ private:
 	std::unique_ptr<std::thread> capture_thread_;
 
 	std::mutex mutex_;
-	std::shared_ptr<uint8_t> image_;
+	//std::shared_ptr<uint8_t> image_;
 	uint32_t image_size_;
 
 	// d3d resource

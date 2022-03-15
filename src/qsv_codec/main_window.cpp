@@ -44,6 +44,11 @@ bool MainWindow::IsWindow()
 	return wnd_ && ::IsWindow(wnd_) != FALSE;
 }
 
+void MainWindow::SetMessageCallback(const MessageCallback& message_callback)
+{
+	message_callback_ = message_callback;
+}
+
 HWND MainWindow::GetHandle()
 {
 	return wnd_;

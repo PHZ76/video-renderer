@@ -5,17 +5,18 @@
 
 int main(int argc, char** argv)
 {
-	int display_mode = 1; // [0:rgb, 1:yuv420, 2:yuv420+chroma420]
+	int display_mode = 2; // [0:rgb, 1:yuv420, 2:yuv420+chroma420]
 
 	MainWindow window;
-	if (!window.Init(600, 600, 1920, 1080)) {
+	if (!window.Init(600, 600, 3440, 1440)) {
 		return -1;
 	}
 
 	window.SetMessageCallback([&display_mode](UINT msg, WPARAM wp, LPARAM lp, LRESULT* result) {
-		if (wp == VK_SPACE) {
+		if (msg == WM_KEYDOWN && wp == VK_SPACE) {
 			display_mode += 1;
 			display_mode %= 3;
+			printf("display mode: %d \n", display_mode);
 		}
 	});
 
@@ -66,10 +67,10 @@ int main(int argc, char** argv)
 					std::vector<std::vector<uint8_t>> compressed_frame;
 					if (video_source.Capture(compressed_frame)) {
 						if (display_mode == 1) {
-							video_sink.RenderFrame(compressed_frame[0]);
+							video_sink.RenderNV12(compressed_frame);
 						}
 						if (display_mode == 2) {
-							video_sink.RenderFrame(compressed_frame[0], compressed_frame[1]);
+							video_sink.RenderARGB(compressed_frame);
 						}
 					}
 				}

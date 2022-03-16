@@ -15,6 +15,7 @@ public:
 	void Destroy();
 
 	bool Combine(ID3D11Texture2D* yuv420_texture, ID3D11Texture2D* chroma420_texture);
+	bool Combine(ID3D11Texture2D* yuv420_texture, int yuv420_index, ID3D11Texture2D* chroma420_texture, int chroma420_index);
 
 	ID3D11Texture2D* GetRGBATexture();
 

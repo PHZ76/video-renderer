@@ -25,13 +25,12 @@ static enum AVPixelFormat get_d3d11va_hw_format(AVCodecContext* avctx, const enu
 
 			frames_ctx->format = AV_PIX_FMT_D3D11;
 			frames_ctx->sw_format = AV_PIX_FMT_NV12;
-			frames_ctx->width = FFALIGN(avctx->coded_width, 32);
-			frames_ctx->height = FFALIGN(avctx->coded_height, 32);
+			frames_ctx->width = FFALIGN(avctx->coded_width, 16);
+			frames_ctx->height = FFALIGN(avctx->coded_height, 16);
 			frames_ctx->initial_pool_size = 10;
 
-			frames_hwctx->BindFlags |= D3D11_BIND_DECODER;
-			frames_hwctx->MiscFlags |= D3D11_RESOURCE_MISC_SHARED;
-			//frames_hwctx->BindFlags D3D11_BIND_SHADER_RESOURCE;
+			frames_hwctx->BindFlags |= D3D11_BIND_DECODER;			
+			frames_hwctx->BindFlags |= D3D11_BIND_SHADER_RESOURCE;
 
 			int ret = av_hwframe_ctx_init(avctx->hw_frames_ctx);
 			if (ret < 0) {

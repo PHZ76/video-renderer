@@ -201,6 +201,76 @@ bool D3D11YUVToRGBConverter::Combine(ID3D11Texture2D* yuv420_texture, ID3D11Text
 	return true;
 }
 
+bool D3D11YUVToRGBConverter::Combine(ID3D11Texture2D* yuv420_texture, int yuv420_index, ID3D11Texture2D* chroma420_texture, int chroma420_index)
+{
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> yuv420_y_srv;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> yuv420_uv_srv;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> chroma420_y_srv;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> chroma420_uv_srv;
+
+	D3D11_TEXTURE2D_DESC yuv420_texture_desc;
+	yuv420_texture->GetDesc(&yuv420_texture_desc);
+
+	D3D11_TEXTURE2D_DESC chroma420_texture_desc;
+	yuv420_texture->GetDesc(&chroma420_texture_desc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
+	HRESULT hr = S_OK;
+	srv_desc.Format = DXGI_FORMAT_R8_UNORM;
+	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+	srv_desc.Texture2DArray.MipLevels = 1;
+	srv_desc.Texture2DArray.ArraySize = 1;
+	srv_desc.Texture2DArray.MostDetailedMip = 0;
+	srv_desc.Texture2DArray.FirstArraySlice = 0;
+
+
+	srv_desc.Texture2DArray.FirstArraySlice = yuv420_index;
+	hr = d3d11_device_->CreateShaderResourceView(yuv420_texture, &srv_desc, yuv420_y_srv.GetAddressOf());
+	if (FAILED(hr)) {
+		return false;
+	}
+
+	srv_desc.Texture2DArray.FirstArraySlice = chroma420_index;
+	hr = d3d11_device_->CreateShaderResourceView(chroma420_texture, &srv_desc, chroma420_y_srv.GetAddressOf());
+	if (FAILED(hr)) {
+		return false;
+	}
+
+	srv_desc.Format = DXGI_FORMAT_R8G8_UNORM;
+	srv_desc.Texture2DArray.FirstArraySlice = yuv420_index;
+	hr = d3d11_device_->CreateShaderResourceView(yuv420_texture, &srv_desc, yuv420_uv_srv.GetAddressOf());
+	if (FAILED(hr)) {
+		return false;
+	}
+
+	srv_desc.Texture2DArray.FirstArraySlice = chroma420_index;
+	hr = d3d11_device_->CreateShaderResourceView(chroma420_texture, &srv_desc, chroma420_uv_srv.GetAddressOf());
+	if (FAILED(hr)) {
+		return false;
+	}
+
+	YUVParams yuv_params;
+	yuv_params.width = static_cast<float>(width_);
+	yuv_params.height = static_cast<float>(height_);
+	d3d11_context_->UpdateSubresource((ID3D11Resource*)buffer_, 0, NULL, &yuv_params, 0, 0);
+
+	rgba_texture_->Begin();
+	rgba_texture_->PSSetTexture(0, yuv420_y_srv.Get());
+	rgba_texture_->PSSetTexture(1, yuv420_uv_srv.Get());
+	rgba_texture_->PSSetTexture(2, chroma420_y_srv.Get());
+	rgba_texture_->PSSetTexture(3, chroma420_uv_srv.Get());
+	rgba_texture_->PSSetConstant(0, buffer_);
+	rgba_texture_->PSSetSamplers(0, point_sampler_);
+	rgba_texture_->Draw();
+	rgba_texture_->End();
+	rgba_texture_->PSSetTexture(0, NULL);
+	rgba_texture_->PSSetTexture(1, NULL);
+	rgba_texture_->PSSetTexture(2, NULL);
+	rgba_texture_->PSSetTexture(3, NULL);
+
+	return true;
+}
+
 ID3D11Texture2D* D3D11YUVToRGBConverter::GetRGBATexture()
 {
 	if (rgba_texture_) {

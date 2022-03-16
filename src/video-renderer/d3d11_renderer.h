@@ -58,8 +58,8 @@ protected:
 	ID3D11SamplerState* linear_sampler_ = NULL;
 
 	D3D11RenderTexture* output_texture_ = NULL;
-	std::unique_ptr<D3D11RenderTexture> input_textures_[PIXEL_PLANE_MAX];
-	std::unique_ptr<D3D11RenderTexture> render_targets_[PIXEL_SHADER_MAX];
+	std::shared_ptr<D3D11RenderTexture> input_textures_[PIXEL_PLANE_MAX];
+	std::shared_ptr<D3D11RenderTexture> render_targets_[PIXEL_SHADER_MAX];
 
 	float unsharp_ = 0.0;
 	ID3D11Buffer* sharpen_constants_ = NULL;

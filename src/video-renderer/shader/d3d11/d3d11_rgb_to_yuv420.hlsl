@@ -1,6 +1,7 @@
 Texture2D RGBTexture       : register(t0);
 
 SamplerState PointSampler  : register(s0);
+SamplerState LinearSampler : register(s1);
 
 cbuffer Image : register(b0)
 {

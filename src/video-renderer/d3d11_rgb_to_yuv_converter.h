@@ -27,9 +27,12 @@ private:
 	int width_ = 0;
 	int height_ = 0;
 
-	ID3D11Device* d3d11_device_ = NULL;
+	ID3D11Device*        d3d11_device_  = NULL;
 	ID3D11DeviceContext* d3d11_context_ = NULL;
-	ID3D11SamplerState* point_sampler_ = NULL;
+
+	ID3D11SamplerState* point_sampler_  = NULL;
+	ID3D11SamplerState* linear_sampler_ = NULL;
+
 	ID3D11Buffer* buffer_ = NULL;
 
 	std::unique_ptr<D3D11RenderTexture> yuv420_texture_;

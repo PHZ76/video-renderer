@@ -3,7 +3,7 @@
 #include "d3d11_renderer.h"
 #include "screen_capture.h"
 #include "d3d11va_decoder.h"
-
+#include "d3d11_yuv_to_rgb_converter.h"
 extern "C" {
 #include "libavformat/avformat.h"
 }
@@ -17,14 +17,12 @@ public:
 	virtual bool Init(HWND hwnd, int width, int height);
 	virtual void Destroy();
 
-	virtual void RenderFrame(DX::Image image);
-	virtual void RenderFrame(std::vector<uint8_t> yuv420_frame);
-	virtual void RenderFrame(std::vector<uint8_t> yuv420_frame, std::vector<uint8_t> chroma420_frame);
+	virtual void RenderFrame(DX::Image& image);
+	virtual void RenderNV12(std::vector<std::vector<uint8_t>>& compressed_frame);
+	virtual void RenderARGB(std::vector<std::vector<uint8_t>>& compressed_frame);
 
 private:
 	std::shared_ptr<D3D11VADecoder> yuv420_decoder_;
 	std::shared_ptr<D3D11VADecoder> chroma420_decoder_;
-
-	int width_ = 0;
-	int height_ = 0;
+	std::shared_ptr<DX::D3D11YUVToRGBConverter> color_converter_;
 };

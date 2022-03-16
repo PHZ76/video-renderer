@@ -54,6 +54,11 @@ void D3D11RGBToYUVConverter::Destroy()
 		point_sampler_ = NULL;
 	}
 
+	if (linear_sampler_) {
+		linear_sampler_->Release();
+		linear_sampler_ = NULL;
+	}
+
 	if (buffer_) {
 		buffer_->Release();
 		buffer_ = NULL;
@@ -118,9 +123,13 @@ bool D3D11RGBToYUVConverter::CreateSampler()
 		point_sampler_->Release();
 	}
 
+	if (linear_sampler_) {
+		linear_sampler_->Release();
+	}
+	
 	D3D11_SAMPLER_DESC sampler_desc;
 	memset(&sampler_desc, 0, sizeof(D3D11_SAMPLER_DESC));
-	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT; // D3D11_FILTER_MIN_MAG_MIP_POINT;  //D3D11_FILTER_MIN_MAG_MIP_LINEAR
+	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -133,6 +142,13 @@ bool D3D11RGBToYUVConverter::CreateSampler()
 	HRESULT hr = d3d11_device_->CreateSamplerState(&sampler_desc, &point_sampler_);
 	if (FAILED(hr)) {
 		LOG("ID3D11Device::CreateSamplerState(POINT) failed, %x", hr);
+		return false;
+	}
+
+	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;// D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+	hr = d3d11_device_->CreateSamplerState(&sampler_desc, &linear_sampler_);
+	if (FAILED(hr)) {
+		LOG("ID3D11Device::CreateSamplerState(LINEAR) failed, %x ", hr);
 		return false;
 	}
 
@@ -192,6 +208,7 @@ bool D3D11RGBToYUVConverter::Convert(ID3D11Texture2D* rgba_texture)
 	yuv420_texture_->PSSetTexture(0, argb_srv.Get());
 	yuv420_texture_->PSSetConstant(0, buffer_);
 	yuv420_texture_->PSSetSamplers(0, point_sampler_);
+	yuv420_texture_->PSSetSamplers(1, linear_sampler_);	
 	yuv420_texture_->Draw();
 	yuv420_texture_->End();
 	yuv420_texture_->PSSetTexture(0, NULL);

@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-	int display_mode = 2; // [0:rgb, 1:yuv420, 2:yuv420+chroma420]
+	int display_mode = 0; // [0:rgb, 1:yuv420, 2:yuv420+chroma420]
 
 	MainWindow window;
 	if (!window.Init(600, 600, 3440, 1440)) {

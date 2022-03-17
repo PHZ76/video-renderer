@@ -29,10 +29,10 @@ protected:
 	bool InitDevice();
 	bool CreateRenderer();
 	bool CreateTexture(int width, int height, PixelFormat format);
-	void Begin();
-	void Copy(PixelFrame* frame);
-	void Process();
-	void End();
+	virtual void Begin();
+	virtual void Copy(PixelFrame* frame);
+	virtual void Process();
+	virtual void End();
 
 	void UpdateARGB(PixelFrame* frame);
 	void UpdateI444(PixelFrame* frame);

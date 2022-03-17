@@ -22,6 +22,8 @@ public:
 	virtual void RenderARGB(std::vector<std::vector<uint8_t>>& compressed_frame);
 
 private:
+	virtual void End();
+
 	std::shared_ptr<D3D11VADecoder> yuv420_decoder_;
 	std::shared_ptr<D3D11VADecoder> chroma420_decoder_;
 	std::shared_ptr<DX::D3D11YUVToRGBConverter> color_converter_;

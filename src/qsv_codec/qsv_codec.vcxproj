@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\video-renderer\;$(ProjectDir)..\..\3rdpart\msdk_2021_r1\include;$(ProjectDir)..\..\3rdpart\ffmpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)imgui;$(ProjectDir)imgui\backends;$(ProjectDir)..\video-renderer\;$(ProjectDir)..\..\3rdpart\msdk_2021_r1\include;$(ProjectDir)..\..\3rdpart\ffmpeg\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -109,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\video-renderer\;$(ProjectDir)..\..\3rdpart\msdk_2021_r1\include;$(ProjectDir)..\..\3rdpart\ffmpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)imgui;$(ProjectDir)imgui\backends;$(ProjectDir)..\video-renderer\;$(ProjectDir)..\..\3rdpart\msdk_2021_r1\include;$(ProjectDir)..\..\3rdpart\ffmpeg\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,6 +154,13 @@
     <ClCompile Include="d3d11va_decoder.cpp" />
     <ClCompile Include="d3d11_qsv_device.cpp" />
     <ClCompile Include="d3d11_screen_capture.cpp" />
+    <ClCompile Include="imgui\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="d3d11_qsv_encoder.cpp" />
     <ClCompile Include="main_window.cpp" />
@@ -169,6 +176,14 @@
     <ClInclude Include="d3d11_qsv_device.h" />
     <ClInclude Include="d3d11_qsv_encoder.h" />
     <ClInclude Include="d3d11_screen_capture.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\imstb_rectpack.h" />
+    <ClInclude Include="imgui\imstb_textedit.h" />
+    <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="main_window.h" />
     <ClInclude Include="qsv_encoder.h" />
     <ClInclude Include="screen_capture.h" />

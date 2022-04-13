@@ -59,8 +59,8 @@ bool MainWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp, LRESULT* result)
 	switch (msg)
 	{
 	case WM_SIZE:
-		if (!first_display) {
-			first_display = true;
+		if (first_display) {
+			first_display = false;
 		}
 		else {
 			this->render->Resize();

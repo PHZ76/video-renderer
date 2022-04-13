@@ -25,7 +25,7 @@ private:
 
 	HWND wnd_ = NULL;
 	DXVA2Renderer* render = NULL;
-	bool first_display = false;
+	bool first_display = true;
 
 	static ATOM wnd_class_;
 	static const wchar_t kClassName[];

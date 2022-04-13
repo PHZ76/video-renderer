@@ -12,6 +12,8 @@ DXVA2Renderer::~DXVA2Renderer()
 
 void DXVA2Renderer::RenderFrame(AVFrame* frame)
 {
+	std::lock_guard<std::mutex> locker(mutex_);
+
 	if (!d3d9_device_) {
 		return;
 	}

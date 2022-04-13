@@ -30,6 +30,7 @@ int main(int argc, char** argv)
 		return -2;
 	}
 
+	window.SetRender(&renderer);
 	renderer.SetSharpen(0.5);
 
 	bool abort_request = false;

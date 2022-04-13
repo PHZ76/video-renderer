@@ -56,6 +56,7 @@ void D3D9Renderer::Destroy()
 	}
 
 	DX_SAFE_RELEASE(back_buffer_);
+	DX_SAFE_RELEASE(this->d3d9_swap_chain_);
 	DX_SAFE_RELEASE(d3d9_device_);
 	DX_SAFE_RELEASE(d3d9_);
 
@@ -98,12 +99,10 @@ bool D3D9Renderer::Resize()
 	present_params_.BackBufferWidth = width;
 	present_params_.BackBufferHeight = height;
 
-	HRESULT hr = d3d9_device_->Reset(&present_params_);
+	this->d3d9_swap_chain_->Release();
+	HRESULT hr = this->d3d9_device_->CreateAdditionalSwapChain(&present_params_, &this->d3d9_swap_chain_);
 	if (FAILED(hr)) {
-		Destroy();
-		if (!Init(hwnd_)) {
-			LOG("IDirect3DDevice9::Reset() failed, %x ", hr);
-		}
+		LOG("IDirect3DDevice9::CreateAdditionalSwapChain() failed, %x", hr);
 		return false;
 	}
 
@@ -216,18 +215,24 @@ bool D3D9Renderer::CreateDevice()
 		}
 	}
 
+	hr = this->d3d9_device_->CreateAdditionalSwapChain(&present_params_, &this->d3d9_swap_chain_);
+	if (FAILED(hr)) {
+		LOG("IDirect3DDevice9::CreateAdditionalSwapChain() failed, %x", hr);
+		return false;
+	}
+
 	return true;
 }
 
 bool D3D9Renderer::CreateRender()
 {
-	if (!d3d9_device_) {
+	if (!d3d9_device_ && !this->d3d9_swap_chain_) {
 		return false;
 	}
 
 	HRESULT hr = S_OK;
 
-	hr = d3d9_device_->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer_);
+	hr = this->d3d9_swap_chain_->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &back_buffer_);
 	if (FAILED(hr)) {
 		LOG("IDirect3DDevice9::GetRenderTarget() failed, %x", hr);
 		return false;
@@ -413,7 +418,7 @@ void D3D9Renderer::End()
 	//GetClientRect(hwnd_, &viewport);
 
 	if (output_texture_) {
-		HRESULT hr = d3d9_device_->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer_);
+		HRESULT hr = this->d3d9_swap_chain_->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &back_buffer_);
 		if (FAILED(hr)) {
 			LOG("IDirect3DDevice9::GetRenderTarget() failed, %x", hr);
 			return ;
@@ -425,7 +430,7 @@ void D3D9Renderer::End()
 	}
 	
 	d3d9_device_->EndScene();
-	d3d9_device_->Present(NULL, NULL, NULL, NULL);
+	d3d9_swap_chain_->Present(NULL, NULL, NULL, NULL, 0);
 }
 
 void D3D9Renderer::UpdateARGB(PixelFrame* frame)

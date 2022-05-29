@@ -5,6 +5,8 @@
 #include "d3d11_screen_capture.h"
 #include <fstream> 
 
+#define MSDK_ALIGN16(value) (((value + 15) >> 4) << 4)
+
 using namespace DX;
 
 D3D11ScreenCapture::D3D11ScreenCapture()
@@ -106,12 +108,14 @@ bool D3D11ScreenCapture::InitD3D11()
 
 	hr = dxgi_output1->DuplicateOutput(d3d11_device_.Get(), dxgi_output_duplication_.GetAddressOf());
 	if (FAILED(hr)) {
-		/* 0x887a0004: NVIDIA控制面板-->全局设置--首选图形处理器(自动选择) */
+		/* 0x887a0004: NVIDIA鎺у埗闈㈡澘-->鍏ㄥ眬璁剧疆--棣栭�夊浘褰㈠鐞嗗櫒(鑷姩閫夋嫨) */
 		printf("[D3D11ScreenCapture] Failed to get duplicate output.\n");
 		return false;
 	}
 
 	dxgi_output_duplication_->GetDesc(&dxgi_desc_);
+	dxgi_desc_.ModeDesc.Width = MSDK_ALIGN16(dxgi_desc_.ModeDesc.Width);
+	dxgi_desc_.ModeDesc.Height = MSDK_ALIGN16(dxgi_desc_.ModeDesc.Height);
 
 	if (!CreateTexture()) {
 		return false;
@@ -242,7 +246,15 @@ int D3D11ScreenCapture::AcquireFrame()
 		return -1;
 	}
 
-	d3d11_context_->CopyResource(gdi_texture_.Get(), output_texture.Get());
+	d3d11_context_->CopySubresourceRegion(
+		gdi_texture_.Get(),
+		0,
+		0,
+		0,
+		0, 
+		output_texture.Get(),
+		0,
+		NULL);
 
 	Microsoft::WRL::ComPtr<IDXGISurface1> surface1;
 	hr = gdi_texture_->QueryInterface(__uuidof(IDXGISurface1), reinterpret_cast<void**>(surface1.GetAddressOf()));

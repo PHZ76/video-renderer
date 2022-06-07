@@ -49,6 +49,7 @@ protected:
 
 	IDirect3D9*        d3d9_           = NULL;
 	IDirect3DDevice9*  d3d9_device_    = NULL;
+	IDirect3DSwapChain9* d3d9_swap_chain_ = NULL;
 	IDirect3DSurface9* back_buffer_    = NULL;
 	
 	PixelFormat pixel_format_ = PIXEL_FORMAT_UNKNOW;

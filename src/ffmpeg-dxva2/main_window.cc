@@ -1,4 +1,5 @@
 #include "main_window.h"
+#include "dxva2_renderer.h"
 
 ATOM MainWindow::wnd_class_ = 0;
 const wchar_t MainWindow::kClassName[] = L"VideoRender_MainWindow";
@@ -49,12 +50,21 @@ HWND MainWindow::GetHandle()
 	return wnd_;
 }
 
+void MainWindow::SetRender(DXVA2Renderer* render) {
+	this->render = render;
+}
+
 bool MainWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp, LRESULT* result)
 {
 	switch (msg)
 	{
 	case WM_SIZE:
-		//resize
+		if (first_display) {
+			first_display = false;
+		}
+		else {
+			this->render->Resize();
+		}
 		return true;
 	case WM_DESTROY:
 		::PostQuitMessage(0);

@@ -2,6 +2,8 @@
 
 #include <Windows.h>
 
+class DXVA2Renderer;
+
 class MainWindow
 {
 public:
@@ -13,6 +15,7 @@ public:
 
 	bool IsWindow();
 	HWND GetHandle();
+	void SetRender(DXVA2Renderer* render);
 
 	virtual bool OnMessage(UINT msg, WPARAM wp, LPARAM lp, LRESULT* result);
 
@@ -21,6 +24,8 @@ private:
 	static bool RegisterWindowClass();
 
 	HWND wnd_ = NULL;
+	DXVA2Renderer* render = NULL;
+	bool first_display = true;
 
 	static ATOM wnd_class_;
 	static const wchar_t kClassName[];

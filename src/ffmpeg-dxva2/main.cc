@@ -33,7 +33,8 @@ int main(int argc, char** argv)
 	renderer.SetSharpen(0.5);
 
 	bool abort_request = false;
-	std::string pathname = "piper.h264";
+	//std::string pathname = "piper.h264";
+	std::string pathname = "F:/Develop/Server3/bvmedia/win/out.h264";
 
 	std::thread decode_thread([&abort_request, &renderer, pathname] {
 		AVDemuxer demuxer;

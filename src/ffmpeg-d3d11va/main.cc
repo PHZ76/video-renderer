@@ -38,6 +38,7 @@ int main(int argc, char** argv)
 
 	bool abort_request = false;
 	std::string pathname = "piper.h264";
+	pathname = "F:/FFOutput/input.mp4";
 
 	std::thread decode_thread([&abort_request, &renderer, pathname] {
 		AVDemuxer demuxer;
@@ -50,7 +51,7 @@ int main(int argc, char** argv)
 
 		video_stream = demuxer.GetVideoStream();
 
-		if (!decoder.Init(video_stream, renderer.GetD3D11Device())) {
+		if (!decoder.Init(video_stream, renderer.GetD3D11Device(), true)) {
 			abort_request = true;
 		}
 
@@ -66,10 +67,10 @@ int main(int argc, char** argv)
 					while (ret >= 0) {
 						ret = decoder.Recv(av_frame);
 						if (ret >= 0) {
-							renderer.RenderFrame(av_frame);
+							renderer.RenderFrame(av_frame, video_stream->codecpar->width, video_stream->codecpar->height);
 						}					
 					}
-					Sleep(33);
+					Sleep(25);
 				}
 				av_packet_unref(av_packet);		
 

@@ -10,7 +10,7 @@ public:
 	D3D11VARenderer();
 	virtual ~D3D11VARenderer();
 
-	virtual void RenderFrame(AVFrame* frame);
+	virtual void RenderFrame(AVFrame* frame, int videoWidth, int videoHeight);
 
 private:
 

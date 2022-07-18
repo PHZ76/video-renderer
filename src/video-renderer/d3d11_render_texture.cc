@@ -455,8 +455,8 @@ void D3D11RenderTexture::Begin()
 	vertex[0] = { XMFLOAT3(0.0f,  0.0f,   0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) };
 	vertex[1] = { XMFLOAT3(0.0f,  height, 0.0f), XMFLOAT2(0.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) };
 	vertex[2] = { XMFLOAT3(width, 0.0f,   0.0f), XMFLOAT2(1.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
-		vertex[3] = { XMFLOAT3(width, height, 0.0f), XMFLOAT2(1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
-		d3d11_context_->Unmap((ID3D11Resource*)vertex_buffer_, 0);
+	vertex[3] = { XMFLOAT3(width, height, 0.0f), XMFLOAT2(1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+	d3d11_context_->Unmap((ID3D11Resource*)vertex_buffer_, 0);
 
 	VertexShaderConstants vertex_shader_constants;
 	DirectX::XMMATRIX view = DirectX::XMMatrixIdentity();

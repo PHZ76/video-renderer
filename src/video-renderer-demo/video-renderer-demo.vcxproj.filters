@@ -18,6 +18,9 @@
     <Filter Include="源文件\libyuv\source">
       <UniqueIdentifier>{f726c48d-3b1f-4cbc-86a7-1ac09163e6de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\decode">
+      <UniqueIdentifier>{65d1d195-bd7b-4558-94d8-d65ee1fb92e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cc">
@@ -182,6 +185,12 @@
     <ClCompile Include="libyuv\scale_uv.cc">
       <Filter>源文件\libyuv\source</Filter>
     </ClCompile>
+    <ClCompile Include="av_demuxer.cc">
+      <Filter>源文件\decode</Filter>
+    </ClCompile>
+    <ClCompile Include="d3d11va_decoder.cc">
+      <Filter>源文件\decode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main_window.h">
@@ -261,6 +270,15 @@
     </ClInclude>
     <ClInclude Include="libyuv\libyuv.h">
       <Filter>源文件\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="av_demuxer.h">
+      <Filter>源文件\decode</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d11va_decoder.h">
+      <Filter>源文件\decode</Filter>
+    </ClInclude>
+    <ClInclude Include="av_log.h">
+      <Filter>源文件\decode</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

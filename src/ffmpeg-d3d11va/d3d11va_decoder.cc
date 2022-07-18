@@ -60,7 +60,7 @@ AVDecoder::~AVDecoder()
 }
 
 
-bool AVDecoder::Init(AVStream* stream, void* d3d11_device)
+bool AVDecoder::Init(AVStream* stream, void* d3d11_device, bool hw)
 {
 	if (codec_context_ != nullptr) {
 		LOG("codec was opened.");
@@ -104,26 +104,29 @@ bool AVDecoder::Init(AVStream* stream, void* d3d11_device)
 		}
 	}
 
-	if (d3d11_device) {
-		device_buffer_ = av_hwdevice_ctx_alloc(hw_type);
-		device_context = (AVHWDeviceContext*)device_buffer_->data;
-		d3d11_device_context = (AVD3D11VADeviceContext*)device_context->hwctx;
+	if (hw)
+	{
+		if (d3d11_device) {
+			device_buffer_ = av_hwdevice_ctx_alloc(hw_type);
+			device_context = (AVHWDeviceContext*)device_buffer_->data;
+			d3d11_device_context = (AVD3D11VADeviceContext*)device_context->hwctx;
 
-		d3d11_device_context->device = (ID3D11Device*)d3d11_device;
-		d3d11_device_context->device->AddRef();
-		av_hwdevice_ctx_init(device_buffer_);
+			d3d11_device_context->device = (ID3D11Device*)d3d11_device;
+			d3d11_device_context->device->AddRef();
+			av_hwdevice_ctx_init(device_buffer_);
 
-		codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
-		codec_context_->opaque = device_buffer_;
+			codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
+			codec_context_->opaque = device_buffer_;
+		}
+		else {
+			av_hwdevice_ctx_create(&device_buffer_, hw_type, NULL, NULL, 0);
+			codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
+		}
+
+		codec_context_->get_format = get_d3d11va_hw_format;
+		codec_context_->thread_count = 1;
+		codec_context_->pkt_timebase = stream->time_base;
 	}
-	else {
-		 av_hwdevice_ctx_create(&device_buffer_, hw_type, NULL, NULL, 0);
-		 codec_context_->hw_device_ctx = av_buffer_ref(device_buffer_);
-	}
-
-	codec_context_->get_format = get_d3d11va_hw_format;
-	codec_context_->thread_count = 1;
-	codec_context_->pkt_timebase = stream->time_base;
 
 	if (avcodec_open2(codec_context_, codec, NULL) != 0) {
 		LOG("Open decoder(%d) failed.", (int)stream->codecpar->codec_id);

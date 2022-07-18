@@ -11,6 +11,17 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3d9.lib")
 
+
+#include "av_demuxer.h"
+#include "d3d11va_decoder.h"
+
+#pragma comment(lib, "avformat.lib")
+#pragma comment(lib, "avcodec.lib")
+#pragma comment(lib, "avutil.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
+
 static void GetWindowSize(HWND hwnd, int& width, int& height)
 {
 	RECT rect;
@@ -165,6 +176,33 @@ int main(int argc, char** argv)
 
 	DX::PixelFormat render_format = DX::PIXEL_FORMAT_I420;
 
+
+
+
+	AVDemuxer demuxer;
+	AVDecoder decoder;
+	AVStream* video_stream = nullptr;
+
+
+	bool abort_request = false;
+	std::string pathname = "piper.h264";
+	pathname = "F:/FFOutput/input.mp4";
+
+	if (!demuxer.Open(pathname)) {
+		abort_request = true;
+	}
+
+	video_stream = demuxer.GetVideoStream();
+
+	if (!decoder.Init(video_stream, renderer.GetD3D11Device(), false)) {
+		abort_request = true;
+	}
+
+	AVPacket av_packet1, * av_packet = &av_packet1;
+	AVFrame* av_frame = av_frame_alloc();
+
+
+
 	while (msg.message != WM_QUIT) {
 		if (::PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
 			::TranslateMessage(&msg);
@@ -180,19 +218,53 @@ int main(int argc, char** argv)
 				renderer.Resize();
 			}
 
-			DX::Image argb_image;
-			if (screen_capture.Capture(argb_image)) {
-				if (render_format == DX::PIXEL_FORMAT_ARGB) {
-					RenderARGB(&renderer, argb_image);
+			{
+				int ret = demuxer.Read(av_packet);
+				if (ret >= 0) {
+					if (av_packet->stream_index == video_stream->index) {
+						ret = decoder.Send(&av_packet1);
+						while (ret >= 0) {
+							ret = decoder.Recv(av_frame);
+							if (ret >= 0) {
+								DX::PixelFrame frame;
+								frame.format = DX::PIXEL_FORMAT_I420;
+								frame.width = demuxer.GetVideoStream()->codecpar->width;
+								frame.height= demuxer.GetVideoStream()->codecpar->height;
+								for (size_t i = 0; i < 3; i++)
+								{
+									frame.pitch[i] = av_frame->linesize[i];
+									frame.plane[i] = av_frame->data[i];
+								}
+
+								renderer.Render(&frame);
+							}
+						}
+						Sleep(25);
+					}
+					av_packet_unref(av_packet);
+
+					if (demuxer.IsEOF()) {
+						demuxer.Close();
+						demuxer.Open(pathname);
+					}
 				}
-				else if (render_format == DX::PIXEL_FORMAT_I444) {
-					RenderI444(&renderer, argb_image);
-				}
-				else if (render_format == DX::PIXEL_FORMAT_I420) {
-					RenderI420(&renderer, argb_image);
-				}
-				else if (render_format == DX::PIXEL_FORMAT_NV12) {
-					RenderNV12(&renderer, argb_image);
+			}
+
+			if (0) {
+				DX::Image argb_image;
+				if (screen_capture.Capture(argb_image)) {
+					if (render_format == DX::PIXEL_FORMAT_ARGB) {
+						RenderARGB(&renderer, argb_image);
+					}
+					else if (render_format == DX::PIXEL_FORMAT_I444) {
+						RenderI444(&renderer, argb_image);
+					}
+					else if (render_format == DX::PIXEL_FORMAT_I420) {
+						RenderI420(&renderer, argb_image);
+					}
+					else if (render_format == DX::PIXEL_FORMAT_NV12) {
+						RenderNV12(&renderer, argb_image);
+					}
 				}
 			}
 		}

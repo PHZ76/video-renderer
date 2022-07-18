@@ -96,11 +96,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\video-renderer\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\video-renderer\;$(ProjectDir)..\..\3rdpart\ffmpeg\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\3rdpart\ffmpeg\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,6 +152,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="av_demuxer.cc" />
+    <ClCompile Include="d3d11va_decoder.cc" />
     <ClCompile Include="d3d9_screen_capture.cc" />
     <ClCompile Include="libyuv\compare.cc" />
     <ClCompile Include="libyuv\compare_common.cc" />
@@ -207,6 +210,9 @@
     <ClCompile Include="window_helper.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="av_demuxer.h" />
+    <ClInclude Include="av_log.h" />
+    <ClInclude Include="d3d11va_decoder.h" />
     <ClInclude Include="d3d9_screen_capture.h" />
     <ClInclude Include="libyuv\libyuv.h" />
     <ClInclude Include="libyuv\libyuv\basic_types.h" />

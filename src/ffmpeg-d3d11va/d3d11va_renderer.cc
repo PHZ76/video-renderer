@@ -10,7 +10,7 @@ D3D11VARenderer::~D3D11VARenderer()
 
 }
 
-void D3D11VARenderer::RenderFrame(AVFrame* frame)
+void D3D11VARenderer::RenderFrame(AVFrame* frame, int videoWidth, int videoHeight)
 {
 	std::lock_guard<std::mutex> locker(mutex_);
 
@@ -25,8 +25,8 @@ void D3D11VARenderer::RenderFrame(AVFrame* frame)
 	texture->GetDesc(&desc);
 
 	if (pixel_format_ != DX::PIXEL_FORMAT_NV12 ||
-		width_ != desc.Width || height_ != desc.Height) {
-		if (!CreateTexture(desc.Width, desc.Height, DX::PIXEL_FORMAT_NV12)) {
+		width_ != videoWidth || height_ != videoHeight) {
+		if (!CreateTexture(videoWidth, videoHeight, DX::PIXEL_FORMAT_NV12)) {
 			return;
 		}
 	}

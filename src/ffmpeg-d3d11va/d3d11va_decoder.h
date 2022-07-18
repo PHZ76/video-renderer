@@ -20,7 +20,7 @@ public:
 	AVDecoder();
 	virtual ~AVDecoder();
 
-	virtual bool Init(AVStream* stream, void* d3d11_device);
+	virtual bool Init(AVStream* stream, void* d3d11_device, bool hw);
 	virtual void Destroy();
 
 	virtual int  Send(AVPacket* packet);

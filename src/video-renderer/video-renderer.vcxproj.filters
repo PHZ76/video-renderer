@@ -38,6 +38,9 @@
     <ClCompile Include="d3d11_yuv_to_rgb_converter.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d9_renderer.h">
@@ -98,6 +101,9 @@
       <Filter>源文件</Filter>
     </ClInclude>
     <ClInclude Include="d3d11_yuv_to_rgb_converter.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

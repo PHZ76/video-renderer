@@ -49,6 +49,14 @@ void D3D11VARenderer::RenderFrame(AVFrame* frame, int videoWidth, int videoHeigh
 
 	DX::D3D11RenderTexture* render_target = render_targets_[DX::PIXEL_SHADER_NV12_BT601].get();
 	if (render_target) {
+		// 保持视频比例
+		RECT rect;
+		GetClientRect(wnd_, &rect);
+		double srcRatio = (double)width_ / height_;
+		double dstRatio = (double)rect.right / rect.bottom;
+		render_target->ResetCameraMatrix();
+		render_target->UpdateByRatio(srcRatio, dstRatio);
+
 		render_target->Begin();
 		render_target->PSSetTexture(0, nv12_texture_y_srv);
 		render_target->PSSetTexture(1, nv12_texture_uv_srv);

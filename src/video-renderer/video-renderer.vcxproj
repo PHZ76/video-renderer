@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="d3d11_renderer.cc" />
     <ClCompile Include="d3d11_render_texture.cc" />
     <ClCompile Include="d3d11_rgb_to_yuv_converter.cc" />
@@ -27,6 +28,7 @@
     <ClCompile Include="d3d9_render_texture.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="d3d11_renderer.h" />
     <ClInclude Include="d3d11_render_texture.h" />
     <ClInclude Include="d3d11_rgb_to_yuv_converter.h" />

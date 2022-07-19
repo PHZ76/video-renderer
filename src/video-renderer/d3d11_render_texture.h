@@ -6,6 +6,7 @@
 #include <d3dcompiler.h>
 #include <directxmath.h>
 #include <directxcolors.h>
+#include "Camera.h"
 
 namespace DX {
 
@@ -29,6 +30,10 @@ public:
 	void Draw();
 	void End();
 
+	void ResetCameraMatrix();
+	void MulTransformMatrix(const DirectX::XMMATRIX& matrix);
+	void UpdateByRatio(double srcRatio, double dstRatio);
+
 	ID3D11Texture2D* GetTexture();
 
 	ID3D11RenderTargetView* GetRenderTargetView();
@@ -51,6 +56,9 @@ private:
 	ID3D11InputLayout*          vertex_layout_    = NULL;
 	ID3D11Buffer*               vertex_constants_ = NULL;
 	ID3D11Buffer*               vertex_buffer_    = NULL;
+	ID3D11Buffer*               m_pIndexBuffer;            // Ë÷Òý»º³åÇø
+	size_t                      indicesSize;
+
 	ID3D11PixelShader*          pixel_shader_     = NULL;
 	ID3D11RasterizerState*      rasterizer_state_ = NULL;
 
@@ -61,6 +69,8 @@ private:
 	ID3D11RenderTargetView*     nv12_uv_rtv_      = NULL;
 	ID3D11ShaderResourceView*   nv12_y_srv_       = NULL;
 	ID3D11ShaderResourceView*   nv12_uv_srv_      = NULL;
+
+	DirectX::XMMATRIX transformMatrix = DirectX::XMMatrixRotationZ(0);
 };
 
 }

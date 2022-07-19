@@ -790,6 +790,14 @@ void D3D11Renderer::UpdateNV12(PixelFrame* frame)
 
 	D3D11RenderTexture* render_target = render_targets_[PIXEL_SHADER_NV12_BT601].get();
 	if (render_target) {
+		// 保持视频比例
+		RECT rect;
+		GetClientRect(wnd_, &rect);
+		double srcRatio = (double)width_ / height_;
+		double dstRatio = (double)rect.right / rect.bottom;
+		render_target->ResetCameraMatrix();
+		render_target->UpdateByRatio(srcRatio, dstRatio);
+
 		render_target->Begin();
 		render_target->PSSetTexture(0, luminance_view);
 		render_target->PSSetTexture(1, chrominance_view);

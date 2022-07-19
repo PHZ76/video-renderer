@@ -1,7 +1,9 @@
+
 cbuffer VertexShaderConstants : register(b0)
 {
-	matrix view;
-	matrix projection;
+    matrix g_World; // matrix可以用float4x4替代。不加row_major的情况下，矩阵默认为列主矩阵，
+    matrix g_View; // 可以在前面添加row_major表示行主矩阵
+    matrix g_Proj; // 该教程往后将使用默认的列主矩阵，但需要在C++代码端预先将矩阵进行转置。
 };
 
 struct VertexShaderInput
@@ -20,15 +22,19 @@ struct VertexShaderOutput
 
 VertexShaderOutput main(VertexShaderInput input)
 {
-	VertexShaderOutput output = (VertexShaderOutput)0;
-	float4 pos = float4(input.pos, 1.0f);
+    VertexShaderOutput output;
+	//float4 pos = float4(input.pos, 1);
 
-	pos = mul(pos, view);
-	pos = mul(pos, projection);
+	//pos = mul(pos, view);
+    //pos = mul(pos, projection);
 
-	output.pos = pos;
+    output.pos = mul(float4(input.pos, 1.0), g_World);
+    output.pos = mul(output.pos, g_View);
+    output.pos = mul(output.pos, g_Proj);
+	
 	output.uv = input.uv;
 	output.color = input.color;
 
 	return output;
 }
+

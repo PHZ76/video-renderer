@@ -166,7 +166,7 @@ int main(int argc, char** argv)
         return -3;
     }
 
-    renderer.SetSharpen(0.5);
+    //renderer.SetSharpen(0.5);
 
     int original_width = 0, original_height = 0;
     GetWindowSize(window.GetHandle(), original_width, original_height);

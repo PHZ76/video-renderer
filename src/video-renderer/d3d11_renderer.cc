@@ -796,7 +796,7 @@ void D3D11Renderer::UpdateNV12(PixelFrame* frame)
 		double srcRatio = (double)width_ / height_;
 		double dstRatio = (double)rect.right / rect.bottom;
 		render_target->ResetCameraMatrix();
-		render_target->UpdateByRatio(srcRatio, dstRatio);
+		render_target->UpdateScaling(width_, height_, rect.right, rect.bottom, 90);
 
 		render_target->Begin();
 		render_target->PSSetTexture(0, luminance_view);

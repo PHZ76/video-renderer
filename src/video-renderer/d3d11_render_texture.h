@@ -32,7 +32,7 @@ public:
 
 	void ResetCameraMatrix();
 	void MulTransformMatrix(const DirectX::XMMATRIX& matrix);
-	void UpdateByRatio(double srcRatio, double dstRatio);
+	void UpdateScaling(double videoW, double videoH, double winW, double winH, int angle);
 
 	ID3D11Texture2D* GetTexture();
 
@@ -71,6 +71,7 @@ private:
 	ID3D11ShaderResourceView*   nv12_uv_srv_      = NULL;
 
 	DirectX::XMMATRIX transformMatrix = DirectX::XMMatrixRotationZ(0);
+	int m_angle = 0;
 };
 
 }

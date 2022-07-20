@@ -8,6 +8,9 @@
 using namespace DX;
 using namespace DirectX;
 
+namespace dx = DirectX;
+constexpr auto PI = 3.14159265358979;
+
 struct VertexShaderConstants
 {
     DirectX::XMMATRIX world;
@@ -491,9 +494,6 @@ void D3D11RenderTexture::Cleanup()
 }
 
 
-namespace dx = DirectX;
-constexpr auto PI = 3.14159265358979;
-
 void D3D11RenderTexture::ResetCameraMatrix() {
     transformMatrix = dx::XMMatrixRotationX(0);
 }
@@ -502,16 +502,36 @@ void D3D11RenderTexture::MulTransformMatrix(const DirectX::XMMATRIX& matrix)
     transformMatrix *= matrix;
 }
 
-void D3D11RenderTexture::UpdateByRatio(double srcRatio, double dstRatio) {
+void D3D11RenderTexture::UpdateScaling(double videoW, double videoH, double winW, double winH, int angle)
+{
+    double srcRatio = 1;
+    double dstRatio = 1;
+
+    if (0 == angle % 180)
+    {
+        srcRatio = videoW / videoH;
+        dstRatio = winW / winH;
+    }
+    else if (0 == angle % 90)
+    {
+        srcRatio = videoW / videoH;
+        dstRatio = winH / winW;
+    }
+
+
     if (srcRatio > dstRatio) {
+        // video 比较宽, 缩小宽度
         MulTransformMatrix(DirectX::XMMatrixScaling(1, dstRatio / srcRatio, 1));
     }
     else if (srcRatio < dstRatio) {
+        // video 比较高, 缩小高度
         MulTransformMatrix(DirectX::XMMatrixScaling(srcRatio / dstRatio, 1, 1));
     }
     else {
         MulTransformMatrix(DirectX::XMMatrixScaling(1, 1, 1));
     }
+
+    m_angle = angle;
 }
 
 
@@ -571,7 +591,12 @@ void D3D11RenderTexture::Begin()
         // dx::XMMatrixRotationRollPitchYaw(0, 0, PI / 2);
         // dx::XMMatrixRotationZ(PI / 2);
 
-        m_CBuffer.view = camera.GetMatrix() * DirectX::XMMatrixTranspose(transformMatrix);
+        auto newMatrix = DirectX::XMMatrixIdentity();
+        newMatrix *= camera.GetMatrix();
+        newMatrix *= transformMatrix;
+        newMatrix *= dx::XMMatrixRotationZ(PI * m_angle / 180);
+
+        m_CBuffer.view = DirectX::XMMatrixTranspose(newMatrix);
 
         d3d11_context_->UpdateSubresource(
             (ID3D11Resource*)vertex_constants_,
